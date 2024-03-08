@@ -1,0 +1,13 @@
+We will need to set up a server socket to connect to all the clients (easy)
+
+We also need a UDP socket to recieve the UDP responses, havent done this before but I doubt its all that bad
+
+Somethings I think will be tricky will be making sure people can join any time (basically, if someones joins before
+the game is started, we can handle this appropriately). 
+
+I am not sure what the requirements for this server are, but it would be cool (and not all that hard) to have a UI 
+for this as well. Maybe someone can act as the gameshow host or something. This definitely isnt necessary, but would
+be pretty simple and set us apart from the other groups, but perhaps it doesnt fit into the requirements. Maybe the UI
+window would show who "pulled" into the queue, who is current trying to answer the question, and aswell show the score
+that all the people have. So someone wouldnt necessarily need to control it, but it would show the responses in the UI window
+as opposed to use just using the command line. 
