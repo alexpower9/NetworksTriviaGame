@@ -1,22 +1,31 @@
 package Server;
 
+import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import SwingWindow.AppWindow;
 
 public class Server
-{
+{   
+    public static void printIP() throws IOException
+    {
+        Socket s = new Socket();
+        s.connect(new InetSocketAddress("google.com", 80));
+        String ip = s.getLocalAddress().getHostAddress();
+        s.close();
+        System.out.println("Current IP is " + ip);
+    }
     public static void main(String[] args)
     {
         try
         {
             //print ip
-            InetAddress ip = Inet4Address.getLocalHost();
-            System.out.println(ip.getHostAddress());
+            printIP();
 
             //so we have tcp connection and udp connection
             ServerSocket server = new ServerSocket(1234);
@@ -31,7 +40,7 @@ public class Server
                 clients.add(clientHandler);
                 new Thread(clientHandler).start();
 
-                System.out.println("New Client connected");
+                System.out.println("New Client connected"); //this is working, which is good
             }
         }
         catch (Exception e)
