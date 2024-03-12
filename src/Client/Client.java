@@ -16,6 +16,7 @@ public class Client
     private String serverIP; //better to have this so we can send udp packets later easily
     private int port;
     private ClientStateObserver observer;
+    private int score;
 
     //call this with the input from the java swing form
     public Client(Socket tcpSocket, DatagramSocket udpSocket, String serverIP)  
@@ -24,6 +25,7 @@ public class Client
         this.udpSocket = udpSocket;
         this.serverIP = serverIP;
         this.port = 1234;
+        this.score = 0;
     } 
 
     public void setObserver(ClientStateObserver observer)

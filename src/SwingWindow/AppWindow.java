@@ -141,6 +141,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
                 System.out.println("Awaiting question");
                 break;
             case QUESTION_RECIEVED:
+                questionRecieved(message);
                 System.out.println("Question recieved");
                 break;
         }
@@ -160,6 +161,21 @@ public class AppWindow extends JFrame implements ClientStateObserver
 
         JLabel waitingLabel = new JLabel("Waiting for game to start");
         this.add(waitingLabel, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
+    }
+
+    //just a simple example to see
+    //but we are going to have the parse the file and display the question/answers in a format that
+    //is easy to read and interact with
+    private void questionRecieved(String question)
+    {
+        this.getContentPane().removeAll();
+        this.revalidate();
+        this.repaint();
+
+        JLabel questionLabel = new JLabel(question);
+        this.add(questionLabel, BorderLayout.CENTER);
         this.revalidate();
         this.repaint();
     }
