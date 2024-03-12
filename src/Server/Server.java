@@ -12,6 +12,8 @@ import SwingWindow.AppWindow;
 
 public class Server
 {   
+    private static ArrayList<ClientHandler> clients = new ArrayList<ClientHandler>();
+    
     public static void printIP() throws IOException
     {
         Socket s = new Socket();
@@ -31,7 +33,7 @@ public class Server
             ServerSocket server = new ServerSocket(1234);
             DatagramSocket udpSocket = new DatagramSocket(1234);
 
-            ArrayList<ClientHandler> clients = new ArrayList<ClientHandler>();
+            
 
             while(true) //accept clients
             {
@@ -39,20 +41,22 @@ public class Server
                 ClientHandler clientHandler = new ClientHandler(socket, udpSocket); //each clientHandler handles input/output for a client
                 clients.add(clientHandler);
                 new Thread(clientHandler).start();
+                System.out.println("New Client connected"); //this is working, which is good
+
+                //just testing to see if we can send a question to the client and have the client change states as we need it, which it does
                 for (ClientHandler client : clients)
                 {
                     client.sendMessage("STATE:AWAITING_GAME_START");
                     Thread.sleep(1000);
-                    client.sendMessage("src/QuestionFiles/question1.txt");
+                    client.sendQuestion("src/QuestionFiles/question1.txt");
                 }
                 
-
-                System.out.println("New Client connected"); //this is working, which is good
             }
         }
         catch (Exception e)
         {
             System.out.println("Error: " + e);
         }
+        
     }
 }

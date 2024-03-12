@@ -30,6 +30,7 @@ public class ClientHandler implements Runnable
     //since we are sending questions as a text file to the client
     public void sendQuestion(String path)
     {
+        System.out.println("Sent question");
         File file = new File(path);
         //easiest way is to use a byte array to send the file over and have the client deal with it on their end
         byte[] fileBytes = new byte[(int) file.length()];
