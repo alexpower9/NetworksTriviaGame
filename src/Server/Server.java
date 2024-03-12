@@ -42,7 +42,10 @@ public class Server
                 for (ClientHandler client : clients)
                 {
                     client.sendMessage("STATE:AWAITING_GAME_START");
+                    Thread.sleep(1000);
+                    client.sendMessage("src/QuestionFiles/question1.txt");
                 }
+                
 
                 System.out.println("New Client connected"); //this is working, which is good
             }
