@@ -39,6 +39,10 @@ public class Server
                 ClientHandler clientHandler = new ClientHandler(socket, udpSocket); //each clientHandler handles input/output for a client
                 clients.add(clientHandler);
                 new Thread(clientHandler).start();
+                for (ClientHandler client : clients)
+                {
+                    client.sendMessage("STATE:AWAITING_GAME_START");
+                }
 
                 System.out.println("New Client connected"); //this is working, which is good
             }

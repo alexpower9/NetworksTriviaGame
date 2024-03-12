@@ -2,6 +2,7 @@ package Server;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.DatagramSocket;
 import java.net.Socket;
@@ -61,7 +62,12 @@ public class ClientHandler implements Runnable
             }
         }
     }
-    
+    public void sendMessage(String message) throws IOException 
+    {
+        OutputStream out = tcpSocket.getOutputStream();
+        out.write(message.getBytes());
+        out.flush();
+    }
 
     public void handleUDP()
     {
