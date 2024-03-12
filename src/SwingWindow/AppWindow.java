@@ -20,19 +20,23 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 
+import Client.Client;
+import Client.ClientState;
+import Client.ClientStateObserver;
+
 /*
  * Use this class to make a new window for the application. That way we can easily make a new window in
  * both our client and server classes. Not sure if this is the best way, but if we include methods to call
  * specifically for either class, it should be fine. Maybe we can just make a new JFrame class for the server though
  */
 
-public class AppWindow extends JFrame
+public class AppWindow extends JFrame implements ClientStateObserver
 {
     private ArrayList<JLabel> labels = new ArrayList<JLabel>();
     private JTextField[] ipFields = new JTextField[4];
     private String stringIP = "";
     private FutureTask<String> ipFutureTask = new FutureTask<>(() -> stringIP); //block the thread until a valid IP is inputted
-
+    private Client client;
 
     public AppWindow()
     {
@@ -122,5 +126,41 @@ public class AppWindow extends JFrame
     public FutureTask<String> getIpFutureTask()
     {
         return ipFutureTask;
+    }
+
+    @Override
+    public void onClientStateChanged(ClientState state, String message)
+    {
+        switch(state)
+        {
+            case AWAITING_GAME_START:
+                waitingForGameStart();
+                System.out.println("Awaiting game start");
+                break;
+            case AWAITING_QUESTION:
+                System.out.println("Awaiting question");
+                break;
+            case QUESTION_RECIEVED:
+                System.out.println("Question recieved");
+                break;
+        }
+    
+    }
+
+    public void setClient(Client client)
+    {
+        this.client = client;
+    }
+
+    private void waitingForGameStart()
+    {
+        this.getContentPane().removeAll();
+        this.revalidate();
+        this.repaint();
+
+        JLabel waitingLabel = new JLabel("Waiting for game to start");
+        this.add(waitingLabel, BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
     }
 }

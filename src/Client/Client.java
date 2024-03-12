@@ -15,6 +15,7 @@ public class Client
     private DatagramSocket udpSocket;
     private String serverIP; //better to have this so we can send udp packets later easily
     private int port;
+    private ClientStateObserver observer;
 
     //call this with the input from the java swing form
     public Client(Socket tcpSocket, DatagramSocket udpSocket, String serverIP)  
@@ -24,8 +25,27 @@ public class Client
         this.serverIP = serverIP;
         this.port = 1234;
     } 
+
+    public void setObserver(ClientStateObserver observer)
+    {
+        this.observer = observer;
+    }
+
+    private void changeState(ClientState state, String message)
+    {
+        if (observer != null)
+        {
+            observer.onClientStateChanged(state, message);
+        }
+    }
     
-    public void listenForQuestions() throws IOException
+    /*
+     * My idea for this method is to handle all the input from the server.
+     * If its a state change from the server, then we can call the changeState method
+     * If its a question, then we can use the info from it and update the window, and so on.
+     * Not exactly sure how this is going to work, but worth a shot.
+     */
+    public void listenForData() throws IOException
     {
         try
         {
@@ -34,10 +54,24 @@ public class Client
             while(true)
             {
                 byte[] buffer = new byte[1024];
-                in.read(buffer);
-                String question = new String(buffer);
-                System.out.println(question);
-                break; //once we get a question we can break out of the loop
+                int bytesRead = in.read(buffer);
+                String message = new String(buffer, 0, bytesRead);
+
+                if (message.startsWith("STATE:"))
+                {
+                    String state = message.substring(6).trim(); //prefix all states with STATE: from server
+                    System.out.println("State: " + state);
+                    switch (state) {
+                        case "AWAITING_GAME_START":
+                            changeState(ClientState.AWAITING_GAME_START, "Waiting for game to start");
+                            break;
+                    }
+                }
+                else if (message.startsWith("QUESTION:"))
+                {
+                    String question = message.substring(9).trim();
+                    changeState(ClientState.QUESTION_RECIEVED, question);
+                }
             }
         }
         catch (Exception e)
@@ -78,6 +112,7 @@ public class Client
     {
         return this.serverIP;
     }
+
     public static void main(String[] args)
     {
         try
@@ -88,6 +123,15 @@ public class Client
             
             //now make new client
             Client client = new Client(new Socket(ip, 1234), new DatagramSocket(), ip);
+            window.setClient(client);
+            client.setObserver(window);
+            new Thread(() -> {
+                try {
+                    client.listenForData();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
         catch (Exception e)
         {
