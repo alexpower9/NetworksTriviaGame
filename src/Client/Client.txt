@@ -1,6 +1,0 @@
-In this file, we will have to set up a tcp connection to a server socket in the server file (easy).
-
-We will also need to set up something to send the response back using UDP (answering and "pushing" into the queue)
-
-Also, when ran, this file should open a new java swing window. Maybe we can pass the IP as a command line arugment. I did
-this for my last project and was pretty simple.
