@@ -1,82 +1,100 @@
 package Server;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.DatagramSocket;
+import java.io.*;
 import java.net.Socket;
+import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-/*
- * We will use this class to handle sending and recieving messages from the client
- */
-public class ClientHandler implements Runnable
-{
-    private Socket tcpSocket;
-    private DatagramSocket udpSocket;
+public class ClientHandler implements Runnable {
+    private final Socket clientSocket;
+    private final int ID;
+    private ObjectOutputStream outputStream;
+    private DataInputStream inputStream;
+    private int correctAnswer = -1;
+    private final ConcurrentLinkedQueue<Poll> pollQueue;
+    private boolean isAnswerReceived = false;
 
-    public ClientHandler(Socket tcpSocket, DatagramSocket udpSocket)
-    {
-        this.tcpSocket = tcpSocket;
-        this.udpSocket = udpSocket;
+    public ClientHandler(Socket clientSocket, int ID, ConcurrentLinkedQueue<Poll> pollQueue) {
+        this.clientSocket = clientSocket;
+        this.ID = ID;
+        this.pollQueue = pollQueue;
     }
 
     @Override
-    public void run()
-    {
-
+    public void run() {
+        try {
+            initializeStreams();
+            sendClientID();
+            sendQuestionFile(1);
+            handleClientResponses();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            closeStreams();
+        }
     }
 
-    //since we are sending questions as a text file to the client
-    public void sendQuestion(String path)
-    {
-        System.out.println("Sent question");
-        File file = new File(path);
-        //easiest way is to use a byte array to send the file over and have the client deal with it on their end
-        byte[] fileBytes = new byte[(int) file.length()];
+    private void initializeStreams() throws IOException {
+        outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+        inputStream = new DataInputStream(clientSocket.getInputStream());
+    }
 
-        FileInputStream fis = null;
+    private void sendClientID() throws IOException {
+        outputStream.writeInt(this.ID);
+        outputStream.flush();
+    }
 
-        try
-        {
-            fis = new FileInputStream(file);
-            fis.read(fileBytes);
-
-            OutputStream os = tcpSocket.getOutputStream();
-            os.write(fileBytes);
-        }
-        catch (Exception e)
-        {
-            System.out.println("Error: " + e);
-        }
-        finally
-        {
-            try
-            {
-                if (fis != null)
-                {
-                    fis.close();
-                }
+    void sendQuestionFile(int questionNumber) throws IOException {
+        String filePath = "src/QuestionFiles/question" + questionNumber + ".txt";
+        File file = new File(filePath);
+        try (Scanner scanner = new Scanner(file)) {
+            String msgType = "File";
+            outputStream.writeObject(msgType);
+            outputStream.writeInt(questionNumber);
+            int counter = 0;
+            while (counter < 5 && scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                outputStream.writeObject(line);
+                counter++;
             }
-            catch (Exception e)
-            {
-                System.out.println("Error: " + e);
+            if (scanner.hasNextInt()) {
+                correctAnswer = scanner.nextInt();
             }
+            outputStream.flush();
         }
     }
-    public void sendMessage(String message) throws IOException 
-    {
-        OutputStream out = tcpSocket.getOutputStream();
-        out.write(message.getBytes());
-        out.flush();
+
+    private void handleClientResponses() throws IOException {
+        while (true) {
+            int currAnswer = inputStream.readInt();
+            System.out.println("The answer given: " + currAnswer + ". The correct answer is: " + correctAnswer);
+            int score = (currAnswer == correctAnswer) ? 10 : -10;
+            outputStream.writeObject("Score");
+            outputStream.writeInt(score);
+            outputStream.flush();
+            isAnswerReceived = true;
+        }
     }
 
-    public void handleUDP()
-    {
-        //handle the UDP connection here
+    private void closeStreams() {
+        try {
+            if (outputStream != null) {
+                outputStream.close();
+            }
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            clientSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-        //my idea is to make it so that when we call this method, maybe we give it like 20 seconds
-        //in a loop of calling this method. Then, we can see which ones didnt answer and put them at
-        //the back of the queue maybe?
+    public boolean isAnswerReceived() {
+        return isAnswerReceived;
+    }
+
+    public int getClientID(){
+        return this.ID;
     }
 }
