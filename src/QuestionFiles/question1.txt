@@ -1,6 +1,6 @@
-What is the largest city by population in the world?
-1
-this
-works
-now
+Who is the all-time leading scorer in the history of the NHL?
+Wayne Gretzky
+Gordie Howe
+Jaromir Jagr
+Alex Ovechkin
 0

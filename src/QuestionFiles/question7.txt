@@ -1,6 +1,6 @@
-What is the largest city by population in the world?
-hello
-7
-works
-now
-0
+Which country won the first ever Cricket World Cup in 1975?
+Australia
+England
+West Indies
+India
+1
