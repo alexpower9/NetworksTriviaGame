@@ -16,14 +16,14 @@ import java.util.UUID;
 
 public class Client implements ActionListener
 {
-	private JButton pollButton;
-	private JButton submitButton;
-	private JRadioButton optionButton[];
+	private static JButton pollButton;
+	private static JButton submitButton;
+	private static JRadioButton optionButton[];
 	private String optionButtonText[]; //To store text for each option
 	private ButtonGroup optionButtonGroup;
 	private int currentSelection;
 	private JLabel question;
-	private JLabel timerLabel;
+	private static JLabel timerLabel;
 	private JLabel countdownLabel;
 	private JLabel scoreLabel;
     private int scoreCount;
@@ -35,13 +35,17 @@ public class Client implements ActionListener
 	private Socket socket;
 	private ObjectInputStream inputStream;
 	private DataOutputStream outputStream;
+	private boolean isAllowedToSelect = true; // Flag to track if the client is allowed to select options
 
-	private JFrame window;
+
+	private static JFrame window;
 	
 	private static SecureRandom random = new SecureRandom();
 	
 	public Client(String ipAddress, int port) throws FileNotFoundException
 	{   
+		//IP
+		
 		// Initialize JFrame
 		window = new JFrame("LETS PLAY TRIVIA!");
 		window.setSize(1200, 800); // Increased window size
@@ -108,7 +112,7 @@ public class Client implements ActionListener
 			inputStream = new ObjectInputStream(socket.getInputStream());
 			outputStream = new DataOutputStream(socket.getOutputStream());
 			this.ClientID = Integer.valueOf(inputStream.readInt());
-			System.out.println("Hello i am client " + this.ClientID);
+			System.out.println("Hello I am client " + this.ClientID);
 		} 
 		catch(IOException ioException){
 			ioException.printStackTrace();
@@ -138,10 +142,16 @@ public class Client implements ActionListener
 								displayQuestion(questionInfo);
 							}
 							// if the message is a score message, then increment and display score
-							else if (messageType.equals("Score".trim())){
+							else if (messageType.equals("Score".trim())) {
 								scoreCount += inputStream.readInt();
-								scoreLabel.setText("SCORE: "+scoreCount);
+								scoreLabel.setText("SCORE: " + scoreCount);
 							}
+							else if (messageType.equals("ack")) {
+                            handleAcknowledgment("ack");
+                        	} 
+							else if (messageType.equals("negative-ack")) {
+                            handleAcknowledgment("negative-ack");
+                        	}
 					}
 				}
 				catch (IOException e){
@@ -156,6 +166,28 @@ public class Client implements ActionListener
 		worker.execute();
 		
 	}
+
+	private void handleAcknowledgment(String acknowledgmentType) {
+        if (acknowledgmentType.equals("ack")) {
+            isAllowedToSelect = true; // Set flag to true if acknowledgment is "ack"
+            // Enable options and submit button
+            pollButton.setEnabled(true);
+            submitButton.setEnabled(true);
+            for (JRadioButton option : optionButton) {
+                option.setEnabled(true);
+            }
+        } else if (acknowledgmentType.equals("negative-ack")) {
+            // Disable options and submit button
+            isAllowedToSelect = false;
+            pollButton.setEnabled(false);
+            submitButton.setEnabled(false);
+            for (JRadioButton option : optionButton) {
+                option.setEnabled(false);
+            }
+            JOptionPane.showMessageDialog(window, "You were late in polling. Options disabled.");
+        }
+	}
+
 
 	public void displayQuestion(String[] questionFile){
 
@@ -207,43 +239,68 @@ public class Client implements ActionListener
 		String input = action.getActionCommand();  
 		
 		if(input.equals("Poll")){
-			pollButton.setEnabled(false);
-			submitButton.setEnabled(true);
-            for (JRadioButton option : optionButton) {
-				option.setEnabled(true);
+			if (isAllowedToSelect) {
+				try {
+					outputStream.writeBoolean(true); // Send a boolean indicating the "Poll" button is pressed
+					outputStream.flush();
+				} catch (IOException exception3) {
+					exception3.printStackTrace();
+				}
+				if (((CustomTimerTask) clock).getElapsedTime() > 15) { 
+					// Notify the server that the "Poll" button is pressed
+					try {
+						outputStream.writeBoolean(true); // Send a boolean indicating the "Poll" button is pressed
+						outputStream.flush();
+					} catch (IOException exception3) {
+						exception3.printStackTrace();
+					}
+
+					pollButton.setEnabled(false);
+					submitButton.setEnabled(true);
+					for (JRadioButton option : optionButton) {
+						option.setEnabled(true);
+					}
+					byte[] data = null;
+					String message = ClientID + "," + questionNumber;
+					data = message.getBytes();
+					InetAddress ip = null;
+					try {
+						ip = InetAddress.getLocalHost();
+					} catch (UnknownHostException exception) {
+						exception.printStackTrace();
+					}
+					int port = 1234;
+					DatagramPacket packet = new DatagramPacket(data, data.length, ip, port);
+					DatagramSocket socket = null;
+					try {
+						socket = new DatagramSocket();
+						socket.send(packet);
+					} catch (IOException exception1) {
+						exception1.printStackTrace();
+					}
+				}
 			}
-			byte[] data = null;
-			String message = ClientID + "," + questionNumber;
-			data = message.getBytes();
-			InetAddress ip = null;
-			try {
-				ip = InetAddress.getLocalHost();
-			} catch (UnknownHostException exception) {
-				exception.printStackTrace();
-			}
-			int port = 1234;
-			DatagramPacket packet = new DatagramPacket(data, data.length, ip, port);
-			DatagramSocket socket = null;
-			try {
-				socket = new DatagramSocket();
-				socket.send(packet);
-			} catch (IOException exception1) {
-				exception1.printStackTrace();
+			else
+			{
+				JOptionPane.showMessageDialog(window, "Waiting for server acknowledgment...");
 			}
 		} else if(input.equals("Submit")){
-			// send whatever option was selected
-			try {
-				outputStream.writeInt(currentSelection);
-				outputStream.flush();
-			}
-			catch (IOException exception2){
-				exception2.printStackTrace();
-			}
-
-            pollButton.setEnabled(true);
-			submitButton.setEnabled(false);
-            for (JRadioButton option : optionButton) {
-				option.setEnabled(false);
+			if (isAllowedToSelect) {
+				// Only allow submitting if isAllowedToSelect is true
+				try {
+					outputStream.writeInt(currentSelection);
+					outputStream.flush();
+				} catch (IOException exception2) {
+					exception2.printStackTrace();
+				}
+		
+				pollButton.setEnabled(true);
+				submitButton.setEnabled(false);
+				for (JRadioButton option : optionButton) {
+					option.setEnabled(false);
+				}
+			} else {
+				JOptionPane.showMessageDialog(window, "Waiting for server acknowledgment...");
 			}
 		} else if(input.equals(optionButtonText[0])){
 			currentSelection = 0;
@@ -258,17 +315,24 @@ public class Client implements ActionListener
 		}	
 	}
 	
-	public class CustomTimerTask extends TimerTask {
+	public static class CustomTimerTask extends TimerTask {
 		private int duration;  // write setters and getters as you need
 		private boolean blink = false;
 		private Color transparentRed = new Color(255, 0, 0, 100); // More transparent red color
+		private int elapsedTime = 0; // New variable to store elapsed time
 
 		public CustomTimerTask(int duration) {
 			this.duration = duration;
 		}
 
+		public int getElapsedTime() {
+			return elapsedTime;
+		}
+		
 		@Override
 		public void run() {
+			elapsedTime++; // Increment elapsed time each second
+
 			if (duration < 0) {
 				timerLabel.setText("Time Expired!");
 				window.repaint();
