@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Server{
+public class Server{    
 
     private ConcurrentLinkedQueue<Poll> pollQueue;
     private ServerSocket serverSocket;

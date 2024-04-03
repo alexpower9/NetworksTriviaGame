@@ -13,10 +13,8 @@ public class ClientHandler implements Runnable {
     private int correctAnswer = -1;
     private final ConcurrentLinkedQueue<Poll> pollQueue;
     private boolean isAnswerReceived = false;
-    private boolean pollButtonPressed = true; // Track if the client has pressed the "Poll" button
-    private int firstPollClientID = -1; // Track the client ID that pressed the "Poll" button first
-
-
+    private boolean pollButtonPressed = true; 
+    
     public ClientHandler(Socket clientSocket, int ID, ConcurrentLinkedQueue<Poll> pollQueue) {
         this.clientSocket = clientSocket;
         this.ID = ID;
@@ -75,14 +73,18 @@ public class ClientHandler implements Runnable {
 
     private void handleClientResponses() throws IOException {
         while (true) {
+            int questionNumber = 1;
+
             // Read the "Poll" button press status from the client
             pollButtonPressed = inputStream.readBoolean();
     
             System.out.println("Client " + this.ID + " pressed Poll button: " + pollButtonPressed);
     
             // If the "Poll" button is pressed and the user is added to a queue
-            if (pollButtonPressed) {
-                pollQueue.add(new Poll(this.ID, 1)); // Add client to the poll queue
+            if (pollButtonPressed) 
+            {
+                pollQueue.add(new Poll(this.ID, questionNumber)); // Add client to the poll queue
+                
                 // Check if the client is the first one in the queue
                 if (!pollQueue.isEmpty() && pollQueue.peek().getID() == this.ID) {
                     sendAcknowledgment("ack"); // Send acknowledgment to the first client in the queue
@@ -100,16 +102,18 @@ public class ClientHandler implements Runnable {
     
                 // Process the answer
                 System.out.println("The answer given by client " + this.ID + ": " + currAnswer + ". The correct answer is: " + correctAnswer);
-                int score = (currAnswer == correctAnswer) ? 10 : -10;
+                int score = (currAnswer == correctAnswer) ? 10 : -20;
                 outputStream.writeObject("Score");
                 outputStream.writeInt(score);
                 outputStream.flush();
                 isAnswerReceived = true;
     
                 // Remove the client from the queue after answering
-                pollQueue.poll();
+                //pollQueue.poll();
             }
     
+            questionNumber++;
+            
             // Flush the output stream to ensure acknowledgment is sent immediately
             outputStream.flush();
         }
