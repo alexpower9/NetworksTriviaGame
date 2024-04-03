@@ -1,6 +1,6 @@
-What is the largest city by population in the world?
-hello
-this
-works
-now
+Which city hosted the 2016 Summer Olympics?
+London
+Rio de Janeiro
+Tokyo
+Beijing
 1

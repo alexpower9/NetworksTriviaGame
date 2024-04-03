@@ -1,6 +1,6 @@
-What is the largest city by population in the world?
+What is the term for a perfect score of 300 in a game of bowling?
+Strike
+Spare
+Turkey
+Perfect Game
 3
-this
-works
-now
-2

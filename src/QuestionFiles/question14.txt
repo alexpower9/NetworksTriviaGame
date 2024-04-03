@@ -1,6 +1,6 @@
-What is the largest city by population in the world?
-hello
-this
-works
-now
-2
+Which player has scored the most goals in a single NHL season?
+Wayne Gretzky
+Mario Lemieux
+Alexander Ovechkin
+Brett Hull
+0
