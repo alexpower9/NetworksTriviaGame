@@ -27,6 +27,7 @@ import javax.swing.JFrame;
 public class Server
 {   
     public static volatile boolean startGame = false;
+    private static volatile boolean hasAnswered = false;
     public static boolean duringRound = true;
     public static List<ClientHandler> clientHandlers = Collections.synchronizedList(new ArrayList<>());
     private static String correctAnswer = "A"; //just test with this
@@ -152,19 +153,8 @@ public class Server
                             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                        }
-
-                        //After the timeout, wait a second
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        
-                        executor = Executors.newFixedThreadPool(clientSize);
-                        //take the first client from the queue and allow them to answer
-            
-
+                        }                        
+                       
                         Message msg = UDPThread.udpMessages.poll();
                         String id;
                         if(msg == null)
@@ -178,34 +168,60 @@ public class Server
                             id = msg.getMessage();
                         }
 
-                        CountDownLatch latch = new CountDownLatch(1);
+                        // for (ClientHandler client : clientHandlers) {
+                        //     executor.submit(() -> {
+                        //         try {
+                        //             if (msg == null) {
+                        //                 client.sendMessage("STATE:NO_POLL");
+                        //                 System.out.println("Sent a no pull to client");
+                        //             } else if (client.getId().equals(id)) {
+                        //                 client.sendWinnerQuestion("src/QuestionFiles/question1_.txt");
+                        //                 String response = client.readResponse();
+                        //                 hasAnswered = true;
+                        //                 if (response.equals(correctAnswer.toLowerCase())) {
+                        //                     client.sendMessage("STATE:ANSWER_CORRECT");
+                        //                 } else if (response.equals("No answer")){
+                        //                     client.sendMessage("STATE:NO_ANSWER");
+                        //                 } else {
+                        //                     client.sendMessage("STATE:ANSWER_INCORRECT");
+                        //                 }
+                                       
+                        //             } else {
+                        //                 client.sendLoserQuestion("src/QuestionFiles/question1_.txt");
+                        //                 client.sendMessage("STATE:NEXT_QUESTION");
+                        //             }
+                        //         } catch (IOException e) {
+                        //             System.out.println("Error sending message: " + e);
+                        //         }
+                        //     });
+                        // }
 
-                        for (ClientHandler client : clientHandlers) {
-                            executor.submit(() -> {
-                                try {
-                                    if (msg == null) {
-                                        client.sendMessage("STATE:NO_POLL");
-                                        System.out.println("Sent a no pull to client");
-                                    } else if (client.getId().equals(id)) {
-                                        client.sendWinnerQuestion("src/QuestionFiles/question1_.txt");
-                                        String response = client.readResponse();
-                                        if (response.equals(correctAnswer)) {
-                                            client.sendMessage("STATE:ANSWER_CORRECT");
-                                        } else if (response.equals("No answer")){
-                                            client.sendMessage("STATE:NO_ANSWER");
-                                        } else {
-                                            client.sendMessage("STATE:ANSWER_INCORRECT");
-                                        }
-                                        latch.countDown(); 
+                        for(ClientHandler client : clientHandlers)
+                        {
+                            try {
+                                if (msg == null) {
+                                    client.sendMessage("STATE:NO_POLL");
+                                    System.out.println("Sent a no pull to client");
+                                } else if (client.getId().equals(id)) {
+                                    client.sendWinnerQuestion("src/QuestionFiles/question1_.txt");
+                                    System.out.println("Sent winner question");
+                                    String response = client.readResponse();
+                                    hasAnswered = true;
+                                    if (response.equals(correctAnswer.toLowerCase())) {
+                                        client.sendMessage("STATE:ANSWER_CORRECT");
+                                    } else if (response.equals("No answer")){
+                                        client.sendMessage("STATE:NO_ANSWER");
                                     } else {
-                                        client.sendLoserQuestion("src/QuestionFiles/question1_.txt");
-                                        latch.await();
-                                        client.sendMessage("STATE:NEXT_QUESTION");
+                                        client.sendMessage("STATE:ANSWER_INCORRECT");
                                     }
-                                } catch (IOException | InterruptedException e) {
-                                    System.out.println("Error sending message: " + e);
+                                    
+                                } else {
+                                    client.sendLoserQuestion("src/QuestionFiles/question1_.txt");
+                                    client.sendMessage("STATE:NEXT_QUESTION");
                                 }
-                            });
+                            } catch (IOException e) {
+                                System.out.println("Error sending message: " + e);
+                            }
                         }
                         
                         // Shutdown the ExecutorService and wait for all tasks to finish

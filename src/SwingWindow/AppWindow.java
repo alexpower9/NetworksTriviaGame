@@ -166,6 +166,18 @@ public class AppWindow extends JFrame implements ClientStateObserver
             case NO_POLL:
                 noPoll(message);
                 break;
+            case NO_ANSWER:
+                noAnswer(message);
+                break;
+            case ANSWER_CORRECT:
+                answerCorrect(message);
+                break;
+            case ANSWER_INCORRECT:
+                answerIncorrect(message);
+                break;
+            case NEXT_QUESTION:
+                nextQuestion(message);
+                break;
         }
     
     }
@@ -466,7 +478,24 @@ public class AppWindow extends JFrame implements ClientStateObserver
         }
     }
 
-    
+    private void answerCorrect(String message)
+    {
+        this.getContentPane().removeAll();
+        this.revalidate();
+        this.repaint();
+
+        this.setSize(1200, 800); // Increased window size
+        this.setLocationRelativeTo(null); // Center the window
+        this.setLayout(null);
+        this.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setResizable(false);
+
+        this.scoreCount = this.scoreCount + 10;
+        JLabel correctLabel = new JLabel(message);
+        correctLabel.setBounds(500, 50, 1000, 100);
+        this.add(correctLabel);
+    }
 
     private void noPoll(String message)
     {
@@ -491,6 +520,65 @@ public class AppWindow extends JFrame implements ClientStateObserver
         
     }
 
+    private void noAnswer(String message)
+    {
+        //this.question = question;
+        this.getContentPane().removeAll();
+        this.revalidate();
+        this.repaint();
+
+        this.setSize(1200, 800); // Increased window size
+        this.setLocationRelativeTo(null); // Center the window
+        this.setLayout(null);
+        this.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setResizable(false);
+
+        this.scoreCount = this.scoreCount - 20;
+        JLabel noAnswer = new JLabel(message);
+        noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
+        noAnswer.setBounds(800, 200, 1000, 100);
+        this.add(noAnswer);
+    }
+
+    private void nextQuestion(String message)
+    {
+        //this.question = question;
+        this.getContentPane().removeAll();
+        this.revalidate();
+        this.repaint();
+
+        this.setSize(1200, 800); // Increased window size
+        this.setLocationRelativeTo(null); // Center the window
+        this.setLayout(null);
+        this.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setResizable(false);
+
+        this.scoreCount = this.scoreCount - 20;
+        JLabel noAnswer = new JLabel(message);
+        noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
+        noAnswer.setBounds(800, 200, 1000, 100);
+        this.add(noAnswer);
+    }
+    private void answerIncorrect(String message)
+    {
+        this.getContentPane().removeAll();
+        this.revalidate();
+        this.repaint();
+
+        this.setSize(1200, 800); // Increased window size
+        this.setLocationRelativeTo(null); // Center the window
+        this.setLayout(null);
+        this.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setResizable(false);
+
+        this.scoreCount = this.scoreCount - 10;
+        JLabel incorrectLabel = new JLabel(message);
+        incorrectLabel.setBounds(500, 50, 1000, 100);
+        this.add(incorrectLabel);
+    }
     public static class CustomTimerTask extends TimerTask {
 		private int duration;  // write setters and getters as you need
 		private boolean blink = false;
@@ -522,8 +610,17 @@ public class AppWindow extends JFrame implements ClientStateObserver
 		public void run() {
 			elapsedTime++; // Increment elapsed time each second
 
-            if(isAnswerSubmitted) { //if the user answers given the chance, we can just cancel the timer. 
-                this.cancel();
+            if(duration < 0 && !isAnswerSubmitted) {
+                timerLabel.setText("Time Expired!");
+                window.repaint();
+                pollButton.setEnabled(false);
+                submitButton.setEnabled(false);
+                for (JRadioButton option : optionButton) {
+                    option.setEnabled(false);
+                }
+                window.getContentPane().setBackground(null); // Reset background color
+                this.cancel();  // cancel the timed task
+                window.getClient().sendAnswer("No answer");
                 return;
             }
 			if (duration < 0) {

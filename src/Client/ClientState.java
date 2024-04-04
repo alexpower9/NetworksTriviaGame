@@ -14,5 +14,6 @@ public enum ClientState
     NO_POLL,
     ANSWER_CORRECT,
     ANSWER_INCORRECT,
-    NO_ANSWER    
+    NO_ANSWER,
+    NEXT_QUESTION
 }

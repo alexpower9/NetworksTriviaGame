@@ -87,6 +87,9 @@ public class Client
                         case "ANSWER_INCORRECT":
                             changeState(ClientState.ANSWER_INCORRECT, "You answered incorrectly! You lose 10 points", null, null);
                             break;
+                        case "NEXT_QUESTION":
+                            changeState(ClientState.NEXT_QUESTION, "Next question is coming up", null, null);
+                            break;
                     }
                 }
                 else if (message.startsWith("QUESTION:"))
