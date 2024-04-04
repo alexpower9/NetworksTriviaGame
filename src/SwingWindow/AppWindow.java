@@ -55,6 +55,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
 	private JLabel scoreLabel;
     private int scoreCount;
 	private TimerTask clock;
+    private static boolean isAnswering = false;
 
     public AppWindow()
     {
@@ -211,6 +212,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
     {
         if(winnerOrLoser.equals("WINNER"))
         {
+            isAnswering = true;
                 //this.question = question;
             this.getContentPane().removeAll();
             this.revalidate();
@@ -314,6 +316,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
             }
         else if(winnerOrLoser.equals("LOSER"))
         {
+            isAnswering = false;
             //this.question = question;
             this.getContentPane().removeAll();
             this.revalidate();
@@ -392,6 +395,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         }
         else
         {
+            isAnswering = false;
             //this.question = question;
             this.getContentPane().removeAll();
             this.revalidate();
@@ -606,7 +610,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
 		public void run() {
 			elapsedTime++; // Increment elapsed time each second
 
-            if(duration < 0 && !isAnswerSubmitted) {
+            if(duration < 0 && !isAnswerSubmitted && isAnswering) {
                 timerLabel.setText("Time Expired!");
                 window.repaint();
                 pollButton.setEnabled(false);
