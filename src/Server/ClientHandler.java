@@ -3,9 +3,11 @@ package Server;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 /*
@@ -22,76 +24,135 @@ public class ClientHandler implements Runnable
         
         BufferedReader in = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream()));
         this.id = in.readLine();
-        System.out.println("Client ID: " + id);
     }
 
     @Override
     public void run()
     {
+        
+    }
 
+    public String getId()
+    {
+        return id;
+    }
+    public void checkAnswer() throws IOException
+    {
+        String response = readResponse();
+        Server.checkAnswer(this, response);
+    }
+
+    public String waitForTimeout() throws IOException
+    {
+        BufferedReader input = null;
+
+        try {
+            input = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream()));
+
+            String response;
+            while((response = input.readLine()) != null) {
+                if(response.equals("TIMEOUT")) {
+                    System.out.println("Timeout was received: From ClientHandler Class");
+                    return response;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Connection was severed");
+        } finally {
+            
+        }
+
+        return null;
+    }
+
+    public void sendWinnerQuestion(String path) throws IOException
+    {
+        File file = new File(path);
+        BufferedReader br = new BufferedReader(new FileReader(file));
+
+        String finalString = "";
+        String line;
+        while ((line = br.readLine()) != null)
+        {
+            finalString += line + "*";
+        }
+        br.close();
+
+        if (finalString.length() > 0) {
+            finalString = finalString.substring(0, finalString.length() - 1);
+        }
+
+        String winnerString =  finalString + "*" + "WINNER";
+
+        PrintWriter out = new PrintWriter(tcpSocket.getOutputStream(), true);
+        out.println(winnerString);
+    }
+
+    public void sendLoserQuestion(String path) throws IOException
+    {
+        File file = new File(path);
+        BufferedReader br = new BufferedReader(new FileReader(file));
+
+        String finalString = "";
+        String line;
+        while ((line = br.readLine()) != null)
+        {
+            finalString += line + "*";
+        }
+        br.close();
+
+        if (finalString.length() > 0) {
+            finalString = finalString.substring(0, finalString.length() - 1);
+        }
+
+        String winnerString =  finalString + "*" + "LOSER";
+
+        PrintWriter out = new PrintWriter(tcpSocket.getOutputStream(), true);
+        out.println(winnerString);
     }
 
     //since we are sending questions as a text file to the client
-    public void sendQuestion(String path)
+    public void sendQuestion(String path) throws IOException
     {
-        System.out.println("Sent question");
         File file = new File(path);
-        //easiest way is to use a byte array to send the file over and have the client deal with it on their end
-        byte[] fileBytes = new byte[(int) file.length()];
+        BufferedReader br = new BufferedReader(new FileReader(file));
 
-        FileInputStream fis = null;
+        String finalString = "";
+        String line;
+        while ((line = br.readLine()) != null)
+        {
+            finalString += line + "*";
+        }
+        br.close();
 
-        try
-        {
-            fis = new FileInputStream(file);
-            fis.read(fileBytes);
+        if (finalString.length() > 0) {
+            finalString = finalString.substring(0, finalString.length() - 1);
+        }
 
-            OutputStream os = tcpSocket.getOutputStream();
-            os.write(fileBytes);
-        }
-        catch (Exception e)
-        {
-            System.out.println("Error: " + e);
-        }
-        finally
-        {
-            try
-            {
-                if (fis != null)
-                {
-                    fis.close();
-                }
-            }
-            catch (Exception e)
-            {
-                System.out.println("Error: " + e);
-            }
-        }
+        PrintWriter out = new PrintWriter(tcpSocket.getOutputStream(), true);
+        System.out.println(finalString);
+        out.println(finalString);
     }
     public void sendMessage(String message) throws IOException 
     {
-        OutputStream out = tcpSocket.getOutputStream();
-        out.write(message.getBytes());
-        out.flush();
+        PrintWriter out = new PrintWriter(tcpSocket.getOutputStream(), true);
+        out.println(message);
     }
 
-    public String readResponse() throws IOException
+    public String readResponse() throws IOException 
     {
-        String response = "empty";
-        BufferedReader input = new BufferedReader(new java.io.InputStreamReader(tcpSocket.getInputStream())); 
-        //listens for a response for client
+        BufferedReader input = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream())); 
 
-        //we know a response will be coming, so this works here
+        String response;
         while((response = input.readLine()) != null)
         {
-            if(!response.equals("empty"))
+            if(!response.isEmpty())
             {
                 return response;
-                //when we notice a response, we return it
             }
         }
 
-        return response;
+        return null;
     }
 
 }

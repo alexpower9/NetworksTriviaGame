@@ -28,7 +28,9 @@ public class UDPThread implements Runnable
             {
                 udpSocket.receive(packet);
                 String message = new String(packet.getData(), 0, packet.getLength());
-                Message msg = new Message(message, packet.getAddress(), packet.getPort());
+                String[] parts = message.split(" ");
+                String id = parts[0];
+                Message msg = new Message(id, packet.getAddress(), packet.getPort());
                 udpMessages.add(msg);
             }
         } catch (Exception e) {

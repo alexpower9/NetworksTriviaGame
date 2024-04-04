@@ -148,7 +148,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
     }
 
     @Override
-    public void onClientStateChanged(ClientState state, String message, String[] questionFile)
+    public void onClientStateChanged(ClientState state, String message, String[] questionFile, String winnerOrLoser)
     {
         switch(state)
         {
@@ -160,15 +160,12 @@ public class AppWindow extends JFrame implements ClientStateObserver
                 System.out.println("Awaiting question");
                 break;
             case QUESTION_RECIEVED:
-                questionRecieved(message, questionFile);
+                questionRecieved(message, questionFile, winnerOrLoser);
                 System.out.println("Question recieved");
                 break;
-            case POLL_WON:
-                pollWon(message);
+            case NO_POLL:
+                noPoll(message);
                 break;
-            // case POLL_LOST:
-            //     pollLost();
-            //     break;
         }
     
     }
@@ -198,141 +195,295 @@ public class AppWindow extends JFrame implements ClientStateObserver
     //just a simple example to see
     //but we are going to have the parse the file and display the question/answers in a format that
     //is easy to read and interact with
-    private void questionRecieved(String question, String[] questionFile)
+    private void questionRecieved(String question, String[] questionFile, String winnerOrLoser)
     {
-        //this.question = question;
-        this.getContentPane().removeAll();
-        this.revalidate();
-        this.repaint();
+        if(winnerOrLoser.equals("WINNER"))
+        {
+                //this.question = question;
+            this.getContentPane().removeAll();
+            this.revalidate();
+            this.repaint();
 
-        this.setSize(1200, 800); // Increased window size
-		this.setLocationRelativeTo(null); // Center the window
-		this.setLayout(null);
-		this.setVisible(true);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setResizable(false);
+            this.setSize(1200, 800); // Increased window size
+            this.setLocationRelativeTo(null); // Center the window
+            this.setLayout(null);
+            this.setVisible(true);
+            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            this.setResizable(false);
 
-        // JLabel questionLabel = new JLabel(question);
-        // this.add(questionLabel, BorderLayout.CENTER);
-        // this.revalidate();
-        // this.repaint();
-        this.questionFile = questionFile;
-        timerLabel = new JLabel("Timer");
-		timerLabel.setBounds(400, 20, 200, 50); // Adjusted size and position
-		timerLabel.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
-		timerLabel.setForeground(Color.BLUE); // Changed text color
+            // JLabel questionLabel = new JLabel(question);
+            // this.add(questionLabel, BorderLayout.CENTER);
+            // this.revalidate();
+            // this.repaint();
+            this.questionFile = questionFile;
+            timerLabel = new JLabel("Timer");
+            timerLabel.setBounds(400, 20, 200, 50); // Adjusted size and position
+            timerLabel.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+            timerLabel.setForeground(Color.BLUE); // Changed text color
 
-        clock = new CustomTimerTask(15, this);
-		Timer timer = new Timer();
-		timer.schedule(clock, 0, 1000);
+            clock = new CustomTimerTask(10, this);
+            Timer timer = new Timer();
+            timer.schedule(clock, 0, 1000);
 
-        scoreLabel = new JLabel("Score: " + scoreCount);
-		scoreLabel.setBounds(50, 20, 200, 50);
-		scoreLabel.setFont(new Font("Arial", Font.PLAIN, 24));
+            scoreLabel = new JLabel("Score: " + scoreCount);
+            scoreLabel.setBounds(50, 20, 200, 50);
+            scoreLabel.setFont(new Font("Arial", Font.PLAIN, 24));
 
-        countdownLabel = new JLabel("Time: ");
-		countdownLabel.setBounds(300, 20, 200, 50); // Adjusted size and position
-		countdownLabel.setFont(new Font("Arial", Font.PLAIN, 24));
+            countdownLabel = new JLabel("Time: ");
+            countdownLabel.setBounds(300, 20, 200, 50); // Adjusted size and position
+            countdownLabel.setFont(new Font("Arial", Font.PLAIN, 24));
 
-        this.question = new JLabel(question);
-        this.question.setFont(new Font("Times New Roman", Font.BOLD, 32));
-        this.question.setBounds(50, 50, 1000, 100);
-        this.add(this.question);
+            this.question = new JLabel(question);
+            this.question.setFont(new Font("Times New Roman", Font.BOLD, 32));
+            this.question.setBounds(50, 50, 1000, 100);
+            this.add(this.question);
 
-        pollButton = new JButton("Poll");
-		pollButton.setBounds(50, 600, 200, 50); // Increased size
-		pollButton.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+            pollButton = new JButton("Poll");
+            pollButton.setBounds(50, 600, 200, 50); // Increased size
+            pollButton.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+            pollButton.setEnabled(false);
 
-        pollButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                client.sendPoll();
+            pollButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    client.sendPoll();
+                }
+            });
+            
+            // Initialize Submit Button
+            submitButton = new JButton("Submit");
+            submitButton.setBounds(300, 600, 200, 50);
+            submitButton.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+            submitButton.setEnabled(true);
+            //submitButton.addActionListener(this);
+            submitButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (JRadioButton button : optionButton) {
+                        if (button.isSelected()) {
+                            String selectedOption = button.getText();
+                            ((CustomTimerTask) clock).onAnswerSubmitted();
+                            String firstChar = String.valueOf(selectedOption.charAt(0));
+                            System.out.println("We sent the answer: " + firstChar);
+                            client.sendAnswer(firstChar);
+                            ((CustomTimerTask) clock).resetAnswerSubmitted();
+                            break;
+                        }
+                    }
+                }
+            });
+
+            optionButton = new JRadioButton[4];
+            optionButtonText = new String[4];
+            optionButtonGroup = new ButtonGroup();
+            for(int index=0; index<optionButton.length; index++)
+            {
+                //String possibleAnswer = String.valueOf(questionFile[index].charAt(0));// Gets text from file for question
+                optionButtonText[index] = questionFile[index]; // Gets text from file for options
+                optionButton[index] = new JRadioButton(optionButtonText[index]);
+                optionButton[index].setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+                optionButton[index].setBounds(50, 200+(index*80), 900, 60); // Adjusted size and position
+                this.add(optionButton[index]);
+                optionButtonGroup.add(optionButton[index]);
+                optionButton[index].setEnabled(true); //change this when actually using it
             }
-        });
-		
-        // Initialize Submit Button
-		submitButton = new JButton("Submit");
-		submitButton.setBounds(300, 600, 200, 50);
-		submitButton.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
-        submitButton.setEnabled(false);
-		//submitButton.addActionListener(this);
 
-        optionButton = new JRadioButton[4];
-		optionButtonText = new String[4];
-		optionButtonGroup = new ButtonGroup();
-		for(int index=0; index<optionButton.length; index++)
-		{
-            String possibleAnswer = String.valueOf(questionFile[index].charAt(0));// Gets text from file for question
-			optionButtonText[index] = questionFile[index]; // Gets text from file for options
-			optionButton[index] = new JRadioButton(optionButtonText[index]);
-			optionButton[index].addActionListener(new ActionListener() {
+            this.add(timerLabel);
+            this.add(scoreLabel);
+            this.add(submitButton);
+            this.add(countdownLabel);
+            this.add(pollButton);
+            }
+        else if(winnerOrLoser.equals("LOSER"))
+        {
+            //this.question = question;
+            this.getContentPane().removeAll();
+            this.revalidate();
+            this.repaint();
+
+            this.setSize(1200, 800); // Increased window size
+            this.setLocationRelativeTo(null); // Center the window
+            this.setLayout(null);
+            this.setVisible(true);
+            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            this.setResizable(false);
+
+            this.questionFile = questionFile;
+            timerLabel = new JLabel("Timer");
+            timerLabel.setBounds(400, 20, 200, 50); // Adjusted size and position
+            timerLabel.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+            timerLabel.setForeground(Color.BLUE); // Changed text color
+
+            clock = new CustomTimerTask(10, this);
+            Timer timer = new Timer();
+            timer.schedule(clock, 0, 1000);
+
+            scoreLabel = new JLabel("Score: " + scoreCount);
+            scoreLabel.setBounds(50, 20, 200, 50);
+            scoreLabel.setFont(new Font("Arial", Font.PLAIN, 24));
+
+            countdownLabel = new JLabel("Time: ");
+            countdownLabel.setBounds(300, 20, 200, 50); // Adjusted size and position
+            countdownLabel.setFont(new Font("Arial", Font.PLAIN, 24));
+
+            this.question = new JLabel(question);
+            this.question.setFont(new Font("Times New Roman", Font.BOLD, 32));
+            this.question.setBounds(50, 50, 1000, 100);
+            this.add(this.question);
+
+            pollButton = new JButton("Poll");
+            pollButton.setBounds(50, 600, 200, 50); // Increased size
+            pollButton.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+            pollButton.setEnabled(false);
+
+            pollButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    client.sendAnswer(possibleAnswer);
+                    client.sendPoll();
                 }
             });
-			optionButton[index].setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
-			optionButton[index].setBounds(50, 200+(index*80), 900, 60); // Adjusted size and position
-			this.add(optionButton[index]);
-			optionButtonGroup.add(optionButton[index]);
-			optionButton[index].setEnabled(false); //change this when actually using it
-		}
+            pollButton.setEnabled(false);
+            
+            // Initialize Submit Button
+            submitButton = new JButton("Submit");
+            submitButton.setBounds(300, 600, 200, 50);
+            submitButton.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+            submitButton.setEnabled(false);
+            //submitButton.addActionListener(this);
 
-        this.add(timerLabel);
-		this.add(scoreLabel);
-        this.add(submitButton);
-		this.add(countdownLabel);
-		this.add(pollButton);
+            optionButton = new JRadioButton[4];
+            optionButtonText = new String[4];
+            optionButtonGroup = new ButtonGroup();
+            for(int index=0; index<optionButton.length; index++)
+            {
+                String possibleAnswer = String.valueOf(questionFile[index].charAt(0));// Gets text from file for question
+                optionButtonText[index] = questionFile[index]; // Gets text from file for options
+                optionButton[index] = new JRadioButton(optionButtonText[index]);
+                optionButton[index].setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+                optionButton[index].setBounds(50, 200+(index*80), 900, 60); // Adjusted size and position
+                this.add(optionButton[index]);
+                optionButtonGroup.add(optionButton[index]);
+                optionButton[index].setEnabled(false); //change this when actually using it
+            }
+
+            this.add(timerLabel);
+            this.add(scoreLabel);
+            this.add(submitButton);
+            this.add(countdownLabel);
+            this.add(pollButton);
+        }
+        else
+        {
+            //this.question = question;
+            this.getContentPane().removeAll();
+            this.revalidate();
+            this.repaint();
+
+            this.setSize(1200, 800); // Increased window size
+            this.setLocationRelativeTo(null); // Center the window
+            this.setLayout(null);
+            this.setVisible(true);
+            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            this.setResizable(false);
+
+            // JLabel questionLabel = new JLabel(question);
+            // this.add(questionLabel, BorderLayout.CENTER);
+            // this.revalidate();
+            // this.repaint();
+            this.questionFile = questionFile;
+            timerLabel = new JLabel("Timer");
+            timerLabel.setBounds(400, 20, 200, 50); // Adjusted size and position
+            timerLabel.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+            timerLabel.setForeground(Color.BLUE); // Changed text color
+
+            clock = new CustomTimerTask(15, this);
+            Timer timer = new Timer();
+            timer.schedule(clock, 0, 1000);
+
+            scoreLabel = new JLabel("Score: " + scoreCount);
+            scoreLabel.setBounds(50, 20, 200, 50);
+            scoreLabel.setFont(new Font("Arial", Font.PLAIN, 24));
+
+            countdownLabel = new JLabel("Time: ");
+            countdownLabel.setBounds(300, 20, 200, 50); // Adjusted size and position
+            countdownLabel.setFont(new Font("Arial", Font.PLAIN, 24));
+
+            this.question = new JLabel(question);
+            this.question.setFont(new Font("Times New Roman", Font.BOLD, 32));
+            this.question.setBounds(50, 50, 1000, 100);
+            this.add(this.question);
+
+            pollButton = new JButton("Poll");
+            pollButton.setBounds(50, 600, 200, 50); // Increased size
+            pollButton.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+
+            pollButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    client.sendPoll();
+                }
+            });
+            
+            // Initialize Submit Button
+            submitButton = new JButton("Submit");
+            submitButton.setBounds(300, 600, 200, 50);
+            submitButton.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+            submitButton.setEnabled(false);
+            //submitButton.addActionListener(this);
+
+            optionButton = new JRadioButton[4];
+            optionButtonText = new String[4];
+            optionButtonGroup = new ButtonGroup();
+            for(int index=0; index<optionButton.length; index++)
+            {
+                String possibleAnswer = String.valueOf(questionFile[index].charAt(0));// Gets text from file for question
+                optionButtonText[index] = questionFile[index]; // Gets text from file for options
+                optionButton[index] = new JRadioButton(optionButtonText[index]);
+                optionButton[index].addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        client.sendAnswer(possibleAnswer);
+                    }
+                });
+                optionButton[index].setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+                optionButton[index].setBounds(50, 200+(index*80), 900, 60); // Adjusted size and position
+                this.add(optionButton[index]);
+                optionButtonGroup.add(optionButton[index]);
+                optionButton[index].setEnabled(true); //change this when actually using it
+            }
+
+            this.add(timerLabel);
+            this.add(scoreLabel);
+            this.add(submitButton);
+            this.add(countdownLabel);
+            this.add(pollButton);
+        }
     }
 
-    private void pollWon(String message)
+    
+
+    private void noPoll(String message)
     {
         this.getContentPane().removeAll();
         this.revalidate();
         this.repaint();
 
-        timerLabel = new JLabel("Timer");
-		timerLabel.setBounds(400, 20, 200, 50); // Adjusted size and position
-		timerLabel.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
-		timerLabel.setForeground(Color.BLUE); // Changed text color
+        JLabel noPoll = new JLabel(message);
+		int screenWidth = 1200;
+        int screenHeight = 800;
+        int labelWidth = 200;
+        int labelHeight = 50;
 
-        clock = new CustomTimerTask(10, this);
-		Timer timer = new Timer();
-		timer.schedule(clock, 0, 1000);
+        int x = (screenWidth - labelWidth) / 2;
+        int y = (screenHeight - labelHeight) / 2;
 
-        pollButton = new JButton("Poll");
-		pollButton.setBounds(50, 600, 200, 50); // Increased size
-		pollButton.setFont(new Font("Arial", Font.PLAIN, 24));
+        noPoll.setBounds(x, y, labelWidth, labelHeight);
+		noPoll.setFont(new Font("Arial", Font.PLAIN, 16)); 
+		noPoll.setForeground(Color.BLUE); 
 
-        JLabel pollWonLabel = new JLabel(message);
-        pollWonLabel.setFont(new Font("Times New Roman", Font.BOLD, 32));
+        this.add(noPoll);
         
-
-        optionButton = new JRadioButton[4];
-		optionButtonText = new String[4];
-		optionButtonGroup = new ButtonGroup();
-		for(int index=0; index<optionButton.length; index++)
-		{
-            String possibleAnswer = String.valueOf(this.questionFile[index].charAt(0));// Gets text from file for question
-			optionButtonText[index] = this.questionFile[index]; // Gets text from file for options
-			optionButton[index] = new JRadioButton(optionButtonText[index]);
-			optionButton[index].addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ((CustomTimerTask) clock).onAnswerSubmitted();
-                    client.sendAnswer(possibleAnswer);
-                }
-            });
-			optionButton[index].setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
-			optionButton[index].setBounds(50, 200+(index*80), 900, 60); // Adjusted size and position
-			this.add(optionButton[index]);
-			optionButtonGroup.add(optionButton[index]);
-			optionButton[index].setEnabled(false); //change this when actually using it
-		}
-
-        this.add(this.question);
     }
-
 
     public static class CustomTimerTask extends TimerTask {
 		private int duration;  // write setters and getters as you need

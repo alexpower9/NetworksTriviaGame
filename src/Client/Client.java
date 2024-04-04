@@ -42,11 +42,11 @@ public class Client
         this.observer = observer;
     }
 
-    private void changeState(ClientState state, String message, String[] questionFile)
+    private void changeState(ClientState state, String message, String[] questionFile, String winnerOrLoser)
     {
         if (observer != null)
         {
-            observer.onClientStateChanged(state, message, questionFile);
+            observer.onClientStateChanged(state, message, questionFile, winnerOrLoser);
         }
     }
     
@@ -60,22 +60,23 @@ public class Client
     {
         try
         {
-            InputStream in = tcpSocket.getInputStream();
+            BufferedReader in = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream()));
 
-            while(true)
+            String message;
+            while((message = in.readLine()) != null)
             {
-                byte[] buffer = new byte[1024];
-                int bytesRead = in.read(buffer);
-                String message = new String(buffer, 0, bytesRead);
-                System.out.println(message);
+                System.out.println("Here is the message I got: " + message);
 
-                if (message.startsWith("STATE:"))
+                if (message.startsWith("STATE:") && message.length() > 6)
                 {
                     String state = message.substring(6).trim(); //prefix all states with STATE: from server
                     System.out.println("State: " + state);
                     switch (state) {
                         case "AWAITING_GAME_START":
-                            changeState(ClientState.AWAITING_GAME_START, "Waiting for game to start", null);
+                            changeState(ClientState.AWAITING_GAME_START, "Waiting for game to start", null,null);
+                            break;
+                        case "NO_POLL":
+                            changeState(ClientState.NO_POLL, "Nobody wanted to answer. Weird! Wait for next round", null, null);
                             break;
                     }
                 }
@@ -84,28 +85,37 @@ public class Client
                     // System.out.println(message);
                     // String question = message.substring(9).trim();
                     // String[] questionFile;
-                    String[] lines = message.split("\n");
+                    String[] lines = message.split("\\*");
+                    // for (String line : lines)
+                    // {
+                    //     System.out.println(line);
+                    // }
+
                     String question = lines[1].trim(); // The question is on the second line
                     String[] questionFile = new String[4];
                     questionFile[0] = lines[2].trim(); // The first possible answer is on the third line
                     questionFile[1] = lines[3].trim(); // The second possible answer is on the fourth line
                     questionFile[2] = lines[4].trim(); // The third possible answer is on the fifth line
                     questionFile[3] = lines[5].trim(); // The fourth possible answer is on the sixth line
-                    changeState(ClientState.QUESTION_RECIEVED, question, questionFile);
-                }
-                else if(message.startsWith("POLL_WON"))
-                {
-                    changeState(ClientState.POLL_WON, "You won the poll!", null);
-                }
-                else if(message.startsWith("POLL_LOST"))
-                {
-                    changeState(ClientState.POLL_LOST, "Unfortunately, you lost the poll. Please wait for the next round!", null);
+                    
+                    if(lines[lines.length - 1].equals("WINNER"))
+                    {
+                        changeState(ClientState.QUESTION_RECIEVED, question, questionFile, "WINNER");
+                    }
+                    else if(lines[lines.length - 1].equals("LOSER"))
+                    {
+                        changeState(ClientState.QUESTION_RECIEVED, question, questionFile, "LOSER");
+                    }
+                    else
+                    {
+                        changeState(ClientState.QUESTION_RECIEVED, question, questionFile, "NORMAL");
+                    }
                 }
             }
         }
         catch (Exception e)
         {
-            System.out.println("Error: " + e);
+            System.out.println("Error in changing state message: " + e);
         }
     }
 
@@ -125,29 +135,25 @@ public class Client
 
     public void sendTimeout()
     {
-        try
+        try 
         {
-            OutputStream out = tcpSocket.getOutputStream();
-            out.write("T".getBytes());
-            out.flush();
-        }
-        catch (Exception e)
+            PrintWriter out = new PrintWriter(tcpSocket.getOutputStream(), true);
+            out.println("TIMEOUT");
+        } catch (Exception e)
         {
-            System.out.println("Error: " + e);
+            System.out.println("Error Sending Time Out: " + e);
         }
     }
 
     public void sendAnswer(String answer)
     {
-        try
+        try 
         {
-            OutputStream out = tcpSocket.getOutputStream();
-            out.write(answer.getBytes());
-            out.flush();
-        }
-        catch (Exception e)
+            PrintWriter out = new PrintWriter(tcpSocket.getOutputStream(), true);
+            out.println(answer);
+        } catch (Exception e)
         {
-            System.out.println("Error: " + e);
+            System.out.println("Error Sending Time Out: " + e);
         }
     }
 
