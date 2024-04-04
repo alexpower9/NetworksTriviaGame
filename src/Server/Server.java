@@ -108,9 +108,8 @@ public class Server
             
                         for (ClientHandler client : clientHandlers) {
                             client.sendMessage("STATE:AWAITING_GAME_START");
-                            Thread.sleep(3000);
                         }
-                    } catch (IOException | InterruptedException e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
@@ -189,34 +188,7 @@ public class Server
                             id = msg.getMessage();
                         }
 
-                        // for (ClientHandler client : clientHandlers) {
-                        //     executor.submit(() -> {
-                        //         try {
-                        //             if (msg == null) {
-                        //                 client.sendMessage("STATE:NO_POLL");
-                        //                 System.out.println("Sent a no pull to client");
-                        //             } else if (client.getId().equals(id)) {
-                        //                 client.sendWinnerQuestion("src/QuestionFiles/question1_.txt");
-                        //                 String response = client.readResponse();
-                        //                 hasAnswered = true;
-                        //                 if (response.equals(correctAnswer.toLowerCase())) {
-                        //                     client.sendMessage("STATE:ANSWER_CORRECT");
-                        //                 } else if (response.equals("No answer")){
-                        //                     client.sendMessage("STATE:NO_ANSWER");
-                        //                 } else {
-                        //                     client.sendMessage("STATE:ANSWER_INCORRECT");
-                        //                 }
-                                       
-                        //             } else {
-                        //                 client.sendLoserQuestion("src/QuestionFiles/question1_.txt");
-                        //                 client.sendMessage("STATE:NEXT_QUESTION");
-                        //             }
-                        //         } catch (IOException e) {
-                        //             System.out.println("Error sending message: " + e);
-                        //         }
-                        //     });
-                        // }
-
+                        
                         for(ClientHandler client : clientHandlers)
                         {
                             try {
@@ -232,10 +204,6 @@ public class Server
                                         System.out.println("Correct answer was given");
                                         client.sendMessage("STATE:ANSWER_CORRECT");
 
-                                        while(true)
-                                        {
-                                            System.out.println("\n");
-                                        }
                                     } else if (response.equals("No answer")){
                                         client.sendMessage("STATE:NO_ANSWER");
                                     } else {
@@ -250,8 +218,6 @@ public class Server
                                 System.out.println("Error sending message: " + e);
                             }
                         }
-                        
-                        
                     }
                 }
             

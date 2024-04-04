@@ -617,6 +617,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
                 window.getContentPane().setBackground(null); // Reset background color
                 this.cancel();  // cancel the timed task
                 window.getClient().sendAnswer("No answer");
+                System.out.println("The client never decided to answer");
                 return;
             }
 			if (duration < 0) {
