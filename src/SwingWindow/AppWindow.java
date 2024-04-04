@@ -480,21 +480,17 @@ public class AppWindow extends JFrame implements ClientStateObserver
 
     private void answerCorrect(String message)
     {
+        System.out.print("Calling answer correct method");
         this.getContentPane().removeAll();
         this.revalidate();
         this.repaint();
-
-        this.setSize(1200, 800); // Increased window size
-        this.setLocationRelativeTo(null); // Center the window
-        this.setLayout(null);
-        this.setVisible(true);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setResizable(false);
 
         this.scoreCount = this.scoreCount + 10;
         JLabel correctLabel = new JLabel(message);
         correctLabel.setBounds(500, 50, 1000, 100);
         this.add(correctLabel);
+        this.repaint();
+        this.revalidate();
     }
 
     private void noPoll(String message)

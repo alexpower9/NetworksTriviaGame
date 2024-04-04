@@ -1,5 +1,8 @@
 package Server;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
@@ -39,6 +42,18 @@ public class Server
         String ip = s.getLocalAddress().getHostAddress();
         s.close();
         System.out.println("Current IP is " + ip);
+    }
+
+    private static String getCurrentAnswer(String filePath) throws FileNotFoundException, IOException
+    {
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+        String lastLine = null;
+        String line;
+        while ((line = br.readLine()) != null) {
+            lastLine = line;
+        }
+        return lastLine;
+    }
     }
 
     public static void main(String[] args)
@@ -117,10 +132,16 @@ public class Server
                                 try {
                                     client.sendQuestion("src/QuestionFiles/question1_.txt");
                                 } catch (IOException e) {
-                                    // TODO Auto-generated catch block
                                     e.printStackTrace();
                                 }
                             });
+                        }
+
+                        try {
+                            correctAnswer = getCurrentAnswer("src/QuestionFiles/question1_.txt").toLowerCase();
+                            System.out.println("Correct answer is: " + correctAnswer);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                         
                         executor.shutdown();
@@ -206,9 +227,15 @@ public class Server
                                     client.sendWinnerQuestion("src/QuestionFiles/question1_.txt");
                                     System.out.println("Sent winner question");
                                     String response = client.readResponse();
-                                    hasAnswered = true;
-                                    if (response.equals(correctAnswer.toLowerCase())) {
+                                    
+                                    if (response.toLowerCase().equals(correctAnswer.toLowerCase())) {
+                                        System.out.println("Correct answer was given");
                                         client.sendMessage("STATE:ANSWER_CORRECT");
+
+                                        while(true)
+                                        {
+                                            System.out.println("\n");
+                                        }
                                     } else if (response.equals("No answer")){
                                         client.sendMessage("STATE:NO_ANSWER");
                                     } else {
@@ -224,23 +251,7 @@ public class Server
                             }
                         }
                         
-                        // Shutdown the ExecutorService and wait for all tasks to finish
-                        executor.shutdown();
-                        try {
-                            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        //wait 3 three seconds before starting the next round
-                        try {
-                            Thread.sleep(20000);
-                        } catch (InterruptedException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                        UDPThread.udpMessages.clear();
                         
-                        //startGame = false;
                     }
                 }
             
