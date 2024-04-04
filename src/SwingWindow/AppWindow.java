@@ -560,8 +560,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.setResizable(false);
 
         
-        this.scoreCount = this.scoreCount - 20;
-        JLabel noAnswer = new JLabel("Get ready for the next question!");
+        JLabel noAnswer = new JLabel("You didnt win the poll.\nGet ready for the next question!");
         noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
         noAnswer.setBounds(400, 200, 1000, 100);
         this.add(noAnswer);
