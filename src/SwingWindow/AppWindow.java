@@ -302,6 +302,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
                             System.out.println("We sent the answer: " + firstChar);
                             client.sendAnswer(firstChar);
                             ((CustomTimerTask) clock).resetAnswerSubmitted();
+                            clock.cancel();
                             break;
                         }
                     }
