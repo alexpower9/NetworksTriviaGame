@@ -1,10 +1,11 @@
 package Server;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.DatagramSocket;
 import java.net.Socket;
 
 /*
@@ -13,12 +14,15 @@ import java.net.Socket;
 public class ClientHandler implements Runnable
 {
     private Socket tcpSocket;
-    private DatagramSocket udpSocket;
-
-    public ClientHandler(Socket tcpSocket, DatagramSocket udpSocket)
+    private String id;
+    
+    public ClientHandler(Socket tcpSocket) throws IOException
     {
         this.tcpSocket = tcpSocket;
-        this.udpSocket = udpSocket;
+        
+        BufferedReader in = new BufferedReader(new InputStreamReader(tcpSocket.getInputStream()));
+        this.id = in.readLine();
+        System.out.println("Client ID: " + id);
     }
 
     @Override
@@ -71,12 +75,23 @@ public class ClientHandler implements Runnable
         out.flush();
     }
 
-    public void handleUDP()
+    public String readResponse() throws IOException
     {
-        //handle the UDP connection here
+        String response = "empty";
+        BufferedReader input = new BufferedReader(new java.io.InputStreamReader(tcpSocket.getInputStream())); 
+        //listens for a response for client
 
-        //my idea is to make it so that when we call this method, maybe we give it like 20 seconds
-        //in a loop of calling this method. Then, we can see which ones didnt answer and put them at
-        //the back of the queue maybe?
+        //we know a response will be coming, so this works here
+        while((response = input.readLine()) != null)
+        {
+            if(!response.equals("empty"))
+            {
+                return response;
+                //when we notice a response, we return it
+            }
+        }
+
+        return response;
     }
+
 }

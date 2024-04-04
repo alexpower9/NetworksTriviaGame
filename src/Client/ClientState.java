@@ -8,5 +8,7 @@ public enum ClientState
     AWAITING_TURN,
     PULLING_TURN,
     ANSWERING_QUESTION,
-    GAME_OVER    
+    GAME_OVER,
+    POLL_WON,
+    POLL_LOST    
 }
