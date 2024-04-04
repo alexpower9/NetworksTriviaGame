@@ -117,13 +117,14 @@ public class Server
                         {
                             Socket socket = server.accept();
                             ClientHandler clientHandler = new ClientHandler(socket);
+                            clientHandler.sendMessage("STATE:AWAITING_GAME_START");
                             clientHandlers.add(clientHandler);
                             new Thread(clientHandler).start();
                             System.out.println("New Client connected");
 
-                            for (ClientHandler client : clientHandlers) {
-                                client.sendMessage("STATE:AWAITING_GAME_START");
-                            }
+                            // for (ClientHandler client : clientHandlers) {
+                            //     client.sendMessage("STATE:AWAITING_GAME_START");
+                            // }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
