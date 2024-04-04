@@ -33,7 +33,7 @@ import javax.swing.JFrame;
 public class Server
 {   
     public static volatile boolean startGame = false;
-    public static boolean duringRound = true;
+    public static boolean duringRound = false;
     public static List<ClientHandler> clientHandlers = Collections.synchronizedList(new ArrayList<>());
     private static String correctAnswer = "A"; //just test with this
     
@@ -74,6 +74,8 @@ public class Server
 
             openGUI();
 
+            List<ClientHandler> newClients = new ArrayList<>();
+
             // while(true) //accept clients
             // {
             //     Socket socket = server.accept();
@@ -102,14 +104,26 @@ public class Server
             new Thread(() -> {
                 while (true) {
                     try {
-                        Socket socket = server.accept();
-                        ClientHandler clientHandler = new ClientHandler(socket);
-                        clientHandlers.add(clientHandler);
-                        new Thread(clientHandler).start();
-                        System.out.println("New Client connected");
-            
-                        for (ClientHandler client : clientHandlers) {
-                            client.sendMessage("STATE:AWAITING_GAME_START");
+
+                        if(duringRound)
+                        {
+                            Socket socket = server.accept();
+                            ClientHandler clientHandler = new ClientHandler(socket);
+                            clientHandler.sendMessage("STATE:AWAITING_GAME_START");
+                            newClients.add(clientHandler);
+                            
+                        }
+                        else
+                        {
+                            Socket socket = server.accept();
+                            ClientHandler clientHandler = new ClientHandler(socket);
+                            clientHandlers.add(clientHandler);
+                            new Thread(clientHandler).start();
+                            System.out.println("New Client connected");
+
+                            for (ClientHandler client : clientHandlers) {
+                                client.sendMessage("STATE:AWAITING_GAME_START");
+                            }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -125,6 +139,12 @@ public class Server
                     {
                         for(int q = 1; q <= 20; q++)
                         {
+                            if (!newClients.isEmpty())
+                            {
+                                clientHandlers.addAll(newClients);
+                                newClients.clear();
+                            }
+                            duringRound = true;
                             String questionString = "src/QuestionFiles/question" + String.valueOf(q) + "_.txt";
                             int clientSize = clientHandlers.size(); //this way, if someone joins mid round it wont mess it up
                             ExecutorService executor = Executors.newFixedThreadPool(clientSize); //create a thread pool for each client
@@ -232,6 +252,8 @@ public class Server
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }   
+
+                            duringRound = false;
 
                             UDPThread.udpMessages.clear();
                             try {
