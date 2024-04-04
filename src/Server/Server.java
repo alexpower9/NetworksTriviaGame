@@ -122,7 +122,7 @@ public class Server
                 {
                     if (startGame)
                     {
-                        for(int q = 1; q <= 5; q++)
+                        for(int q = 1; q <= 1; q++)
                         {
                             String questionString = "src/QuestionFiles/question" + String.valueOf(q) + "_.txt";
                             int clientSize = clientHandlers.size(); //this way, if someone joins mid round it wont mess it up
@@ -238,6 +238,11 @@ public class Server
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
+
+                            if(q == 1)
+                            {
+                                break;
+                            }
                         }
 
                         TreeMap<Integer, List<ClientHandler>> scoreMap = new TreeMap<>(Collections.reverseOrder());
@@ -257,9 +262,11 @@ public class Server
                         }
 
                         int position = 1;
-                        for(Map.Entry<Integer, List<ClientHandler>> entry : scoreMap.entrySet()) {
+                        for(Map.Entry<Integer, List<ClientHandler>> entry : scoreMap.entrySet())
+                        {
                             List<ClientHandler> clients = entry.getValue();
-                            for(ClientHandler client : clients) {
+                            for(ClientHandler client : clients)
+                            {
                                 try {
                                     client.sendMessage("POSITION:" + position);
                                 } catch (IOException e) {
@@ -268,9 +275,7 @@ public class Server
                             }
                             position += clients.size();
                         }
-
-                        //loop through clients, send the final results to each individual.
-
+                        break;
                     }
                 }
             }).start();
