@@ -218,6 +218,12 @@ public class Server
                                 System.out.println("Error sending message: " + e);
                             }
                         }
+
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             

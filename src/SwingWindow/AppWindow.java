@@ -168,7 +168,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
                 noPoll(message);
                 break;
             case NO_ANSWER:
-                noAnswer(message);
+                noAnswer();
                 break;
             case ANSWER_CORRECT:
                 answerCorrect(message);
@@ -520,7 +520,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         
     }
 
-    private void noAnswer(String message)
+    private void noAnswer()
     {
         //this.question = question;
         this.getContentPane().removeAll();
@@ -534,11 +534,15 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
 
+        
         this.scoreCount = this.scoreCount - 20;
-        JLabel noAnswer = new JLabel(message);
+        JLabel noAnswer = new JLabel("No answer was submitted!");
         noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
         noAnswer.setBounds(800, 200, 1000, 100);
         this.add(noAnswer);
+
+        this.revalidate();
+        this.repaint();
     }
 
     private void nextQuestion(String message)
