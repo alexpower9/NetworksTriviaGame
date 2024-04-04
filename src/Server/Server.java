@@ -13,10 +13,12 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import SwingWindow.AppWindow;
 import java.net.*;
 import java.util.Queue;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -238,8 +240,37 @@ public class Server
                             }
                         }
 
+                        TreeMap<Integer, List<ClientHandler>> scoreMap = new TreeMap<>(Collections.reverseOrder());
+
+                        for(ClientHandler client : clientHandlers)
+                        {
+                            try 
+                            {
+                                client.sendMessage("GET_SCORE");
+                                String response = client.readResponse();
+                                int score = Integer.parseInt(response);
+                                scoreMap.computeIfAbsent(score, k -> new ArrayList<>()).add(client);
+                            } catch (IOException e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        int position = 1;
+                        for(Map.Entry<Integer, List<ClientHandler>> entry : scoreMap.entrySet()) {
+                            List<ClientHandler> clients = entry.getValue();
+                            for(ClientHandler client : clients) {
+                                try {
+                                    client.sendMessage("POSITION:" + position);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            position += clients.size();
+                        }
+
                         //loop through clients, send the final results to each individual.
-                        
+
                     }
                 }
             }).start();

@@ -42,6 +42,11 @@ public class Client
         this.observer = observer;
     }
 
+    public void setScore(int score)
+    {
+        this.score = score;
+    }
+
     private void changeState(ClientState state, String message, String[] questionFile, String winnerOrLoser)
     {
         if (observer != null)
@@ -65,8 +70,6 @@ public class Client
             String message;
             while((message = in.readLine()) != null)
             {
-                System.out.println("Here is the message I got: " + message);
-
                 if (message.startsWith("STATE:") && message.length() > 6)
                 {
                     String state = message.substring(6).trim(); //prefix all states with STATE: from server
@@ -123,12 +126,33 @@ public class Client
                         changeState(ClientState.QUESTION_RECIEVED, question, questionFile, "NORMAL");
                     }
                 }
+                else if(message.startsWith("GET_SCORE"))
+                {
+                    try 
+                    {
+                        PrintWriter out = new PrintWriter(tcpSocket.getOutputStream(), true);
+                        out.println(String.valueOf(this.getScore()));
+                    } catch (Exception e)
+                    {
+                        System.out.println("Error Sending Time Out: " + e);
+                    }
+                }
+                else if(message.startsWith("POSITION:"))
+                {
+                    String position = message.substring("POSITION:".length()).trim();
+                    changeState(ClientState.POSITION_RECIEVED, position, null, null);
+                }
             }
         }
         catch (Exception e)
         {
             System.out.println("Error in changing state message: " + e);
         }
+    }
+
+    public int getScore()
+    {
+        return this.score;
     }
 
     public void sendPoll()

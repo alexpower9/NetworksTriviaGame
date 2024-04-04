@@ -155,14 +155,12 @@ public class AppWindow extends JFrame implements ClientStateObserver
         {
             case AWAITING_GAME_START:
                 waitingForGameStart();
-                System.out.println("Awaiting game start");
                 break;
             case AWAITING_QUESTION:
                 System.out.println("Awaiting question");
                 break;
             case QUESTION_RECIEVED:
                 questionRecieved(message, questionFile, winnerOrLoser);
-                System.out.println("Question recieved");
                 break;
             case NO_POLL:
                 noPoll(message);
@@ -178,6 +176,9 @@ public class AppWindow extends JFrame implements ClientStateObserver
                 break;
             case NEXT_QUESTION:
                 nextQuestion(message);
+                break;
+            case POSITION_RECIEVED:
+                showPosition(message);
                 break;
         }
     
@@ -493,6 +494,20 @@ public class AppWindow extends JFrame implements ClientStateObserver
         }
     }
 
+    private void showPosition(String message)
+    {
+        this.getContentPane().removeAll();
+        this.getContentPane().setBackground(null);
+        this.revalidate();
+        this.repaint();
+
+        JLabel correctLabel = new JLabel("You finished in position number" + message);
+        correctLabel.setBounds(500, 50, 1000, 100);
+        this.add(correctLabel);
+        this.repaint();
+        this.revalidate();
+    }
+
     private void answerCorrect(String message)
     {
         System.out.print("Calling answer correct method");
@@ -502,6 +517,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.repaint();
 
         this.scoreCount = this.scoreCount + 10;
+        this.client.setScore(this.scoreCount);
         JLabel correctLabel = new JLabel(message);
         correctLabel.setBounds(500, 50, 1000, 100);
         this.add(correctLabel);
@@ -549,6 +565,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
 
         
         this.scoreCount = this.scoreCount - 20;
+        this.client.setScore(this.scoreCount);
         JLabel noAnswer = new JLabel("No answer was submitted!");
         noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
         noAnswer.setBounds(400, 200, 1000, 100);
@@ -595,7 +612,8 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.setResizable(false);
 
         
-        this.scoreCount = this.scoreCount - 20;
+        this.scoreCount = this.scoreCount - 10;
+        this.client.setScore(this.scoreCount);
         JLabel noAnswer = new JLabel("You got it wrong! -10 points.");
         noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
         noAnswer.setBounds(400, 200, 1000, 100);
