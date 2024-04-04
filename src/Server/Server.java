@@ -123,7 +123,7 @@ public class Server
                 {
                     if (startGame)
                     {
-                        for(int q = 1; q <= 1; q++)
+                        for(int q = 1; q <= 10; q++)
                         {
                             String questionString = "src/QuestionFiles/question" + String.valueOf(q) + "_.txt";
                             int clientSize = clientHandlers.size(); //this way, if someone joins mid round it wont mess it up
@@ -240,7 +240,7 @@ public class Server
                                 e.printStackTrace();
                             }
 
-                            if(q == 1)
+                            if(q == 10)
                             {
                                 break;
                             }
