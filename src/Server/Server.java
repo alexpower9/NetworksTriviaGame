@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 public class Server
 {   
@@ -37,13 +38,14 @@ public class Server
     public static List<ClientHandler> clientHandlers = Collections.synchronizedList(new ArrayList<>());
     private static String correctAnswer = "A"; //just test with this
     
-    public static void printIP() throws IOException
+    public static String getIP() throws IOException
     {
         Socket s = new Socket();
         s.connect(new InetSocketAddress("google.com", 80));
         String ip = s.getLocalAddress().getHostAddress();
         s.close();
-        System.out.println("Current IP is " + ip);
+        //System.out.println("Current IP is " + ip);
+        return ip;
     }
 
     private static String getCurrentAnswer(String filePath) throws FileNotFoundException, IOException
@@ -63,7 +65,7 @@ public class Server
         try
         {
             //print ip
-            printIP();
+            //printIP();
 
             //so we have tcp connection and udp connection
             ServerSocket server = new ServerSocket(1234);
@@ -105,13 +107,17 @@ public class Server
                 while (true) {
                     try {
 
+                        //if the client joins mid round, accept them, add to a list.
+                        //then, in our game loop, we check at the start if this has clients, and add them
+                        //if it does.
+
+                        //from testing, it seems to handle clients leaving no problem!
                         if(duringRound)
                         {
                             Socket socket = server.accept();
                             ClientHandler clientHandler = new ClientHandler(socket);
                             clientHandler.sendMessage("STATE:AWAITING_GAME_START");
                             newClients.add(clientHandler);
-                            
                         }
                         else
                         {
@@ -122,9 +128,6 @@ public class Server
                             new Thread(clientHandler).start();
                             System.out.println("New Client connected");
 
-                            // for (ClientHandler client : clientHandlers) {
-                            //     client.sendMessage("STATE:AWAITING_GAME_START");
-                            // }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -132,7 +135,6 @@ public class Server
                 }
             }).start();
 
-            // Thread for starting the game
             new Thread(() -> {
                 while(true)
                 {
@@ -163,7 +165,6 @@ public class Server
 
                             try {
                                 correctAnswer = getCurrentAnswer(questionString).toLowerCase();
-                                System.out.println("Correct answer is: " + correctAnswer);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -204,12 +205,10 @@ public class Server
                             String id;
                             if(msg == null)
                             {
-                                System.out.println("Nothing was in the queue.");
                                 id = null;
                             }
                             else
                             {
-                                System.out.println("Something was found");
                                 id = msg.getMessage();
                             }
 
@@ -221,14 +220,11 @@ public class Server
                                     try {
                                         if (msg == null) {
                                             client.sendMessage("STATE:NO_POLL");
-                                            System.out.println("Sent a no pull to client");
                                         } else if (client.getId().equals(id)) {
                                             client.sendWinnerQuestion(questionString);
-                                            System.out.println("Sent winner question");
                                             String response = client.readResponse();
                                             
                                             if (response.toLowerCase().equals(correctAnswer.toLowerCase())) {
-                                                System.out.println("Correct answer was given");
                                                 client.sendMessage("STATE:ANSWER_CORRECT");
     
                                             } else if (response.equals("No answer")){
@@ -318,12 +314,13 @@ public class Server
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(300, 200);
         frame.setLayout(new FlowLayout()); // Set layout manager to FlowLayout
-    
+
         JButton startButton = new JButton("Start Game");
         startButton.addActionListener(e -> {
             startGame = true;
+            startButton.setEnabled(false);
         });
-    
+
         JButton killButton = new JButton("Kill Game");
         killButton.addActionListener(e -> {
             for(ClientHandler client : clientHandlers) {
@@ -334,10 +331,18 @@ public class Server
                 }
             }
         });
-    
+
         frame.getContentPane().add(startButton);
         frame.getContentPane().add(killButton);
-    
+
+        try {
+            String ip = getIP();
+            JLabel ipLabel = new JLabel("Current IP is " + ip);
+            frame.getContentPane().add(ipLabel);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         frame.setVisible(true);
     }
 
