@@ -120,7 +120,7 @@ public class Server
                 {
                     if (startGame)
                     {
-                        for(int q = 1; q <= 20; q++)
+                        for(int q = 1; q <= 5; q++)
                         {
                             String questionString = "src/QuestionFiles/question" + String.valueOf(q) + "_.txt";
                             int clientSize = clientHandlers.size(); //this way, if someone joins mid round it wont mess it up
@@ -237,6 +237,9 @@ public class Server
                                 e.printStackTrace();
                             }
                         }
+
+                        //loop through clients, send the final results to each individual.
+                        
                     }
                 }
             }).start();
