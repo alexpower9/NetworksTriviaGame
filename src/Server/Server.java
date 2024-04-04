@@ -30,7 +30,6 @@ import javax.swing.JFrame;
 public class Server
 {   
     public static volatile boolean startGame = false;
-    private static volatile boolean hasAnswered = false;
     public static boolean duringRound = true;
     public static List<ClientHandler> clientHandlers = Collections.synchronizedList(new ArrayList<>());
     private static String correctAnswer = "A"; //just test with this
@@ -119,114 +118,117 @@ public class Server
             new Thread(() -> {
                 while(true)
                 {
-                    if (startGame) {
-                        
-
-                        int clientSize = clientHandlers.size(); //this way, if someone joins mid round it wont mess it up
-                        ExecutorService executor = Executors.newFixedThreadPool(clientSize); //create a thread pool for each client
-                        for (ClientHandler client : clientHandlers) {
-                            // Submit a task to the ExecutorService for each client
-                            executor.submit(() -> {
-                                // Send the question
-                                try {
-                                    client.sendQuestion("src/QuestionFiles/question1_.txt");
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                        }
-
-                        try {
-                            correctAnswer = getCurrentAnswer("src/QuestionFiles/question1_.txt").toLowerCase();
-                            System.out.println("Correct answer is: " + correctAnswer);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        
-                        executor.shutdown();
-                        try {
-                            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        //wait for all timers to finish
-                        
-                        //if someone could find a way so we dont need to keep repeating this code, that would be great.
-                        executor = Executors.newFixedThreadPool(clientSize);
-
-                        for (ClientHandler client : clientHandlers) {
-                            // Submit a task to the ExecutorService for each client
-                            executor.submit(() -> {
-                                try {
-                                    // Wait for the client to timeout
-                                    client.waitForTimeout();
-
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                        }
-
-                        // Shutdown the ExecutorService and wait for all tasks to finish
-                        executor.shutdown();
-                        try {
-                            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }                        
-                       
-                        Message msg = UDPThread.udpMessages.poll();
-                        String id;
-                        if(msg == null)
+                    if (startGame)
+                    {
+                        for(int q = 1; q <= 20; q++)
                         {
-                            System.out.println("Nothing was in the queue.");
-                            id = null;
-                        }
-                        else
-                        {
-                            System.out.println("Something was found");
-                            id = msg.getMessage();
-                        }
-
-                        
-                        for(ClientHandler client : clientHandlers)
-                        {
-                            try {
-                                if (msg == null) {
-                                    client.sendMessage("STATE:NO_POLL");
-                                    System.out.println("Sent a no pull to client");
-                                } else if (client.getId().equals(id)) {
-                                    client.sendWinnerQuestion("src/QuestionFiles/question1_.txt");
-                                    System.out.println("Sent winner question");
-                                    String response = client.readResponse();
-                                    
-                                    if (response.toLowerCase().equals(correctAnswer.toLowerCase())) {
-                                        System.out.println("Correct answer was given");
-                                        client.sendMessage("STATE:ANSWER_CORRECT");
-
-                                    } else if (response.equals("No answer")){
-                                        client.sendMessage("STATE:NO_ANSWER");
-                                    } else {
-                                        client.sendMessage("STATE:ANSWER_INCORRECT");
+                            String questionString = "src/QuestionFiles/question" + String.valueOf(q) + "_.txt";
+                            int clientSize = clientHandlers.size(); //this way, if someone joins mid round it wont mess it up
+                            ExecutorService executor = Executors.newFixedThreadPool(clientSize); //create a thread pool for each client
+                            for (ClientHandler client : clientHandlers) {
+                                // Submit a task to the ExecutorService for each client
+                                executor.submit(() -> {
+                                    // Send the question
+                                    try {
+                                        client.sendQuestion(questionString);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
                                     }
-                                    
-                                } else {
-                                    client.sendLoserQuestion("src/QuestionFiles/question1_.txt");
-                                    client.sendMessage("STATE:NEXT_QUESTION");
-                                }
-                            } catch (IOException e) {
-                                System.out.println("Error sending message: " + e);
+                                });
                             }
-                        }
 
-                        try {
-                            Thread.sleep(10000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            try {
+                                correctAnswer = getCurrentAnswer(questionString).toLowerCase();
+                                System.out.println("Correct answer is: " + correctAnswer);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            
+                            executor.shutdown();
+                            try {
+                                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            //wait for all timers to finish
+                            
+                            //if someone could find a way so we dont need to keep repeating this code, that would be great.
+                            executor = Executors.newFixedThreadPool(clientSize);
+
+                            for (ClientHandler client : clientHandlers) {
+                                // Submit a task to the ExecutorService for each client
+                                executor.submit(() -> {
+                                    try {
+                                        // Wait for the client to timeout
+                                        client.waitForTimeout();
+
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                });
+                            }
+
+                            // Shutdown the ExecutorService and wait for all tasks to finish
+                            executor.shutdown();
+                            try {
+                                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }                        
+                        
+                            Message msg = UDPThread.udpMessages.poll();
+                            String id;
+                            if(msg == null)
+                            {
+                                System.out.println("Nothing was in the queue.");
+                                id = null;
+                            }
+                            else
+                            {
+                                System.out.println("Something was found");
+                                id = msg.getMessage();
+                            }
+
+                            
+                            for(ClientHandler client : clientHandlers)
+                            {
+                                try {
+                                    if (msg == null) {
+                                        client.sendMessage("STATE:NO_POLL");
+                                        System.out.println("Sent a no pull to client");
+                                    } else if (client.getId().equals(id)) {
+                                        client.sendWinnerQuestion(questionString);
+                                        System.out.println("Sent winner question");
+                                        String response = client.readResponse();
+                                        
+                                        if (response.toLowerCase().equals(correctAnswer.toLowerCase())) {
+                                            System.out.println("Correct answer was given");
+                                            client.sendMessage("STATE:ANSWER_CORRECT");
+
+                                        } else if (response.equals("No answer")){
+                                            client.sendMessage("STATE:NO_ANSWER");
+                                        } else {
+                                            client.sendMessage("STATE:ANSWER_INCORRECT");
+                                        }
+                                        
+                                    } else {
+                                        //client.sendLoserQuestion(questionString);
+                                        client.sendMessage("STATE:NEXT_QUESTION");
+                                    }
+                                } catch (IOException e) {
+                                    System.out.println("Error sending message: " + e);
+                                }
+                            }
+
+                            UDPThread.udpMessages.clear();
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
-            
             }).start();
         
         }

@@ -212,6 +212,8 @@ public class AppWindow extends JFrame implements ClientStateObserver
     {
         if(winnerOrLoser.equals("WINNER"))
         {
+            timerLabel = null;
+            clock = null;
             isAnswering = true;
                 //this.question = question;
             this.getContentPane().removeAll();
@@ -303,6 +305,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
                             client.sendAnswer(firstChar);
                             ((CustomTimerTask) clock).resetAnswerSubmitted();
                             clock.cancel();
+                            isAnswering = false;
                             break;
                         }
                     }
@@ -317,6 +320,8 @@ public class AppWindow extends JFrame implements ClientStateObserver
             }
         else if(winnerOrLoser.equals("LOSER"))
         {
+            timerLabel = null;
+            clock = null;
             isAnswering = false;
             //this.question = question;
             this.getContentPane().removeAll();
@@ -396,6 +401,8 @@ public class AppWindow extends JFrame implements ClientStateObserver
         }
         else
         {
+            timerLabel = null;
+            clock = null;
             isAnswering = false;
             //this.question = question;
             this.getContentPane().removeAll();
