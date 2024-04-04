@@ -219,6 +219,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
             this.getContentPane().removeAll();
             this.revalidate();
             this.repaint();
+            this.getContentPane().setBackground(null);
 
             this.setSize(1200, 800); // Increased window size
             this.setLocationRelativeTo(null); // Center the window
@@ -327,6 +328,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
             this.getContentPane().removeAll();
             this.revalidate();
             this.repaint();
+            this.getContentPane().setBackground(null);
 
             this.setSize(1200, 800); // Increased window size
             this.setLocationRelativeTo(null); // Center the window
@@ -408,6 +410,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
             this.getContentPane().removeAll();
             this.revalidate();
             this.repaint();
+            this.getContentPane().setBackground(null);
 
             this.setSize(1200, 800); // Increased window size
             this.setLocationRelativeTo(null); // Center the window
@@ -494,6 +497,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
     {
         System.out.print("Calling answer correct method");
         this.getContentPane().removeAll();
+        this.getContentPane().setBackground(null);
         this.revalidate();
         this.repaint();
 
@@ -534,6 +538,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.getContentPane().removeAll();
         this.revalidate();
         this.repaint();
+        this.getContentPane().setBackground(null);
 
         this.setSize(1200, 800); // Increased window size
         this.setLocationRelativeTo(null); // Center the window
@@ -558,15 +563,8 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.getContentPane().removeAll();
         this.revalidate();
         this.repaint();
+        this.getContentPane().setBackground(null);
 
-        this.setSize(1200, 800); // Increased window size
-        this.setLocationRelativeTo(null); // Center the window
-        this.setLayout(null);
-        this.setVisible(true);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setResizable(false);
-
-        
         JLabel noAnswer = new JLabel("You didnt win the poll.\nGet ready for the next question!");
         noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
         noAnswer.setBounds(400, 200, 1000, 100);
@@ -579,6 +577,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
     {
         this.getContentPane().removeAll();
         this.revalidate();
+        this.getContentPane().setBackground(null);
         this.repaint();
 
         this.setSize(1200, 800); // Increased window size
