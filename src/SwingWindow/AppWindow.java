@@ -538,7 +538,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.scoreCount = this.scoreCount - 20;
         JLabel noAnswer = new JLabel("No answer was submitted!");
         noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
-        noAnswer.setBounds(800, 200, 1000, 100);
+        noAnswer.setBounds(400, 200, 1000, 100);
         this.add(noAnswer);
 
         this.revalidate();
@@ -547,7 +547,6 @@ public class AppWindow extends JFrame implements ClientStateObserver
 
     private void nextQuestion(String message)
     {
-        //this.question = question;
         this.getContentPane().removeAll();
         this.revalidate();
         this.repaint();
@@ -559,11 +558,15 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
 
+        
         this.scoreCount = this.scoreCount - 20;
-        JLabel noAnswer = new JLabel(message);
+        JLabel noAnswer = new JLabel("Get ready for the next question!");
         noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
-        noAnswer.setBounds(800, 200, 1000, 100);
+        noAnswer.setBounds(400, 200, 1000, 100);
         this.add(noAnswer);
+
+        this.revalidate();
+        this.repaint();
     }
     private void answerIncorrect(String message)
     {
@@ -578,10 +581,15 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
 
-        this.scoreCount = this.scoreCount - 10;
-        JLabel incorrectLabel = new JLabel(message);
-        incorrectLabel.setBounds(500, 50, 1000, 100);
-        this.add(incorrectLabel);
+        
+        this.scoreCount = this.scoreCount - 20;
+        JLabel noAnswer = new JLabel("You got it wrong! -10 points.");
+        noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
+        noAnswer.setBounds(400, 200, 1000, 100);
+        this.add(noAnswer);
+
+        this.revalidate();
+        this.repaint();
     }
     public static class CustomTimerTask extends TimerTask {
 		private int duration;  // write setters and getters as you need
