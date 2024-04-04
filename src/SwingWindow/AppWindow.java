@@ -562,8 +562,15 @@ public class AppWindow extends JFrame implements ClientStateObserver
     {
         this.getContentPane().removeAll();
         this.revalidate();
-        this.repaint();
         this.getContentPane().setBackground(null);
+        this.repaint();
+
+        this.setSize(1200, 800); // Increased window size
+        this.setLocationRelativeTo(null); // Center the window
+        this.setLayout(null);
+        this.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setResizable(false);
 
         JLabel noAnswer = new JLabel("You didnt win the poll.\nGet ready for the next question!");
         noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));

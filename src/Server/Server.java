@@ -189,36 +189,46 @@ public class Server
                                 id = msg.getMessage();
                             }
 
-                            
+                            executor = Executors.newFixedThreadPool(clientSize);
+
                             for(ClientHandler client : clientHandlers)
                             {
-                                try {
-                                    if (msg == null) {
-                                        client.sendMessage("STATE:NO_POLL");
-                                        System.out.println("Sent a no pull to client");
-                                    } else if (client.getId().equals(id)) {
-                                        client.sendWinnerQuestion(questionString);
-                                        System.out.println("Sent winner question");
-                                        String response = client.readResponse();
-                                        
-                                        if (response.toLowerCase().equals(correctAnswer.toLowerCase())) {
-                                            System.out.println("Correct answer was given");
-                                            client.sendMessage("STATE:ANSWER_CORRECT");
-
-                                        } else if (response.equals("No answer")){
-                                            client.sendMessage("STATE:NO_ANSWER");
+                                executor.submit(() -> {
+                                    try {
+                                        if (msg == null) {
+                                            client.sendMessage("STATE:NO_POLL");
+                                            System.out.println("Sent a no pull to client");
+                                        } else if (client.getId().equals(id)) {
+                                            client.sendWinnerQuestion(questionString);
+                                            System.out.println("Sent winner question");
+                                            String response = client.readResponse();
+                                            
+                                            if (response.toLowerCase().equals(correctAnswer.toLowerCase())) {
+                                                System.out.println("Correct answer was given");
+                                                client.sendMessage("STATE:ANSWER_CORRECT");
+    
+                                            } else if (response.equals("No answer")){
+                                                client.sendMessage("STATE:NO_ANSWER");
+                                            } else {
+                                                client.sendMessage("STATE:ANSWER_INCORRECT");
+                                            }
+                                            
                                         } else {
-                                            client.sendMessage("STATE:ANSWER_INCORRECT");
+                                            //client.sendLoserQuestion(questionString);
+                                            client.sendMessage("STATE:NEXT_QUESTION");
                                         }
-                                        
-                                    } else {
-                                        //client.sendLoserQuestion(questionString);
-                                        client.sendMessage("STATE:NEXT_QUESTION");
+                                    } catch (IOException e) {
+                                        System.out.println("Error sending message: " + e);
                                     }
-                                } catch (IOException e) {
-                                    System.out.println("Error sending message: " + e);
-                                }
+                                });
                             }
+
+                            executor.shutdown();
+                            try {
+                                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }   
 
                             UDPThread.udpMessages.clear();
                             try {
