@@ -73,7 +73,6 @@ public class Client
                 if (message.startsWith("STATE:") && message.length() > 6)
                 {
                     String state = message.substring(6).trim(); //prefix all states with STATE: from server
-                    System.out.println("State: " + state);
                     switch (state) {
                         case "AWAITING_GAME_START":
                             changeState(ClientState.AWAITING_GAME_START, "Waiting for game to start", null,null);
@@ -141,6 +140,10 @@ public class Client
                 {
                     String position = message.substring("POSITION:".length()).trim();
                     changeState(ClientState.POSITION_RECIEVED, position, null, null);
+                }
+                else if(message.startsWith("KILL"))
+                {
+                    System.exit(0);
                 }
             }
         }

@@ -1,5 +1,6 @@
 package Server;
 
+import java.awt.FlowLayout;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -293,14 +294,27 @@ public class Server
         JFrame frame = new JFrame("Game Server");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(300, 200);
-
-        JButton button = new JButton("Start Game");
-        button.addActionListener(e -> {
+        frame.setLayout(new FlowLayout()); // Set layout manager to FlowLayout
+    
+        JButton startButton = new JButton("Start Game");
+        startButton.addActionListener(e -> {
             startGame = true;
         });
-
-        frame.getContentPane().add(button);
-
+    
+        JButton killButton = new JButton("Kill Game");
+        killButton.addActionListener(e -> {
+            for(ClientHandler client : clientHandlers) {
+                try {
+                    client.sendMessage("KILL");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+    
+        frame.getContentPane().add(startButton);
+        frame.getContentPane().add(killButton);
+    
         frame.setVisible(true);
     }
 

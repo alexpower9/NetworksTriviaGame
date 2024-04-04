@@ -157,7 +157,6 @@ public class AppWindow extends JFrame implements ClientStateObserver
                 waitingForGameStart();
                 break;
             case AWAITING_QUESTION:
-                System.out.println("Awaiting question");
                 break;
             case QUESTION_RECIEVED:
                 questionRecieved(message, questionFile, winnerOrLoser);
@@ -303,7 +302,6 @@ public class AppWindow extends JFrame implements ClientStateObserver
                             String selectedOption = button.getText();
                             ((CustomTimerTask) clock).onAnswerSubmitted();
                             String firstChar = String.valueOf(selectedOption.charAt(0));
-                            System.out.println("We sent the answer: " + firstChar);
                             client.sendAnswer(firstChar);
                             ((CustomTimerTask) clock).resetAnswerSubmitted();
                             clock.cancel();
@@ -501,7 +499,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.revalidate();
         this.repaint();
 
-        JLabel correctLabel = new JLabel("You finished in position number" + message);
+        JLabel correctLabel = new JLabel("You finished in position number " + message);
         correctLabel.setBounds(500, 50, 1000, 100);
         this.add(correctLabel);
         this.repaint();
@@ -664,7 +662,6 @@ public class AppWindow extends JFrame implements ClientStateObserver
                 window.getContentPane().setBackground(null); // Reset background color
                 this.cancel();  // cancel the timed task
                 window.getClient().sendAnswer("No answer");
-                System.out.println("The client never decided to answer");
                 return;
             }
 			if (duration < 0) {
