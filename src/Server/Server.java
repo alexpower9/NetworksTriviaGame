@@ -273,6 +273,7 @@ public class Server
                             {
                                 client.sendMessage("GET_SCORE");
                                 String response = client.readResponse();
+                                System.out.println("Client: " + client.getId() + "\nHad a final score of: " + response);
                                 int score = Integer.parseInt(response);
                                 scoreMap.computeIfAbsent(score, k -> new ArrayList<>()).add(client);
                             } catch (IOException e)
