@@ -1,0 +1,7 @@
+QUESTION:10
+Which city hosted the 2016 Summer Olympics?
+a) London
+b) Rio de Janeiro
+c) Tokyo
+d) Beijing
+b
