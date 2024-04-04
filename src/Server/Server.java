@@ -15,6 +15,7 @@ import SwingWindow.AppWindow;
 import java.net.*;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -177,8 +178,9 @@ public class Server
                             id = msg.getMessage();
                         }
 
+                        CountDownLatch latch = new CountDownLatch(1);
+
                         for (ClientHandler client : clientHandlers) {
-                            // Submit a task to the ExecutorService for each client
                             executor.submit(() -> {
                                 try {
                                     if (msg == null) {
@@ -186,12 +188,21 @@ public class Server
                                         System.out.println("Sent a no pull to client");
                                     } else if (client.getId().equals(id)) {
                                         client.sendWinnerQuestion("src/QuestionFiles/question1_.txt");
-
-                                        //check results, if hes right, increment score by whatever
+                                        String response = client.readResponse();
+                                        if (response.equals(correctAnswer)) {
+                                            client.sendMessage("STATE:ANSWER_CORRECT");
+                                        } else if (response.equals("No answer")){
+                                            client.sendMessage("STATE:NO_ANSWER");
+                                        } else {
+                                            client.sendMessage("STATE:ANSWER_INCORRECT");
+                                        }
+                                        latch.countDown(); 
                                     } else {
                                         client.sendLoserQuestion("src/QuestionFiles/question1_.txt");
+                                        latch.await();
+                                        client.sendMessage("STATE:NEXT_QUESTION");
                                     }
-                                } catch (IOException e) {
+                                } catch (IOException | InterruptedException e) {
                                     System.out.println("Error sending message: " + e);
                                 }
                             });
@@ -206,7 +217,7 @@ public class Server
                         }
                         //wait 3 three seconds before starting the next round
                         try {
-                            Thread.sleep(3000);
+                            Thread.sleep(20000);
                         } catch (InterruptedException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();

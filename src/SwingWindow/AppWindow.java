@@ -215,6 +215,11 @@ public class AppWindow extends JFrame implements ClientStateObserver
             // this.add(questionLabel, BorderLayout.CENTER);
             // this.revalidate();
             // this.repaint();
+            JLabel winnerLabel = new JLabel("Take your pick!");
+            winnerLabel.setFont(new Font("Times New Roman", Font.BOLD, 32));
+            winnerLabel.setBounds(800, 200, 1000, 100);
+            this.add(winnerLabel);
+
             this.questionFile = questionFile;
             timerLabel = new JLabel("Timer");
             timerLabel.setBounds(400, 20, 200, 50); // Adjusted size and position
@@ -256,6 +261,22 @@ public class AppWindow extends JFrame implements ClientStateObserver
             submitButton.setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
             submitButton.setEnabled(true);
             //submitButton.addActionListener(this);
+
+            optionButton = new JRadioButton[4];
+            optionButtonText = new String[4];
+            optionButtonGroup = new ButtonGroup();
+            for(int index=0; index<optionButton.length; index++)
+            {
+                //String possibleAnswer = String.valueOf(questionFile[index].charAt(0));// Gets text from file for question
+                optionButtonText[index] = questionFile[index]; // Gets text from file for options
+                optionButton[index] = new JRadioButton(optionButtonText[index]);
+                optionButton[index].setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
+                optionButton[index].setBounds(50, 200+(index*80), 900, 60); // Adjusted size and position
+                this.add(optionButton[index]);
+                optionButtonGroup.add(optionButton[index]);
+                optionButton[index].setEnabled(true); //change this when actually using it
+            }
+
             submitButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -273,26 +294,11 @@ public class AppWindow extends JFrame implements ClientStateObserver
                 }
             });
 
-            optionButton = new JRadioButton[4];
-            optionButtonText = new String[4];
-            optionButtonGroup = new ButtonGroup();
-            for(int index=0; index<optionButton.length; index++)
-            {
-                //String possibleAnswer = String.valueOf(questionFile[index].charAt(0));// Gets text from file for question
-                optionButtonText[index] = questionFile[index]; // Gets text from file for options
-                optionButton[index] = new JRadioButton(optionButtonText[index]);
-                optionButton[index].setFont(new Font("Arial", Font.PLAIN, 24)); // Increased font size
-                optionButton[index].setBounds(50, 200+(index*80), 900, 60); // Adjusted size and position
-                this.add(optionButton[index]);
-                optionButtonGroup.add(optionButton[index]);
-                optionButton[index].setEnabled(true); //change this when actually using it
-            }
-
-            this.add(timerLabel);
-            this.add(scoreLabel);
-            this.add(submitButton);
-            this.add(countdownLabel);
-            this.add(pollButton);
+                this.add(timerLabel);
+                this.add(scoreLabel);
+                this.add(submitButton);
+                this.add(countdownLabel);
+                this.add(pollButton);
             }
         else if(winnerOrLoser.equals("LOSER"))
         {
@@ -449,7 +455,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
                 optionButton[index].setBounds(50, 200+(index*80), 900, 60); // Adjusted size and position
                 this.add(optionButton[index]);
                 optionButtonGroup.add(optionButton[index]);
-                optionButton[index].setEnabled(true); //change this when actually using it
+                optionButton[index].setEnabled(false); //change this when actually using it
             }
 
             this.add(timerLabel);

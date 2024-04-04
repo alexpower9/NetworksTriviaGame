@@ -78,6 +78,15 @@ public class Client
                         case "NO_POLL":
                             changeState(ClientState.NO_POLL, "Nobody wanted to answer. Weird! Wait for next round", null, null);
                             break;
+                        case "NO_ANSWER":
+                            changeState(ClientState.NO_ANSWER, "You didnt answer! You lose 20 points for that", null, null);
+                            break;
+                        case "ANSWER_CORRECT":
+                            changeState(ClientState.ANSWER_CORRECT, "You answered correctly! You get 10 points", null, null);
+                            break;
+                        case "ANSWER_INCORRECT":
+                            changeState(ClientState.ANSWER_INCORRECT, "You answered incorrectly! You lose 10 points", null, null);
+                            break;
                     }
                 }
                 else if (message.startsWith("QUESTION:"))

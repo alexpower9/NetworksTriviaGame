@@ -11,5 +11,8 @@ public enum ClientState
     GAME_OVER,
     WINNER_QUESTION,
     LOSER_QUESTION,
-    NO_POLL    
+    NO_POLL,
+    ANSWER_CORRECT,
+    ANSWER_INCORRECT,
+    NO_ANSWER    
 }
