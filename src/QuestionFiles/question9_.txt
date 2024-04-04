@@ -1,0 +1,7 @@
+QUESTION: 9
+What is the diameter of a basketball hoop in inches?
+a) 16 inches
+b) 18 inches
+c) 20 inches
+d) 22 inches
+b
