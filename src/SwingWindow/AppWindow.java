@@ -222,7 +222,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
             this.getContentPane().setBackground(null);
 
             this.setSize(1200, 800); // Increased window size
-            this.setLocationRelativeTo(null); // Center the window
+            //this.setLocationRelativeTo(null); // Center the window
             this.setLayout(null);
             this.setVisible(true);
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -330,7 +330,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
             this.getContentPane().setBackground(null);
 
             this.setSize(1200, 800); // Increased window size
-            this.setLocationRelativeTo(null); // Center the window
+            //this.setLocationRelativeTo(null); // Center the window
             this.setLayout(null);
             this.setVisible(true);
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -412,7 +412,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
             this.getContentPane().setBackground(null);
 
             this.setSize(1200, 800); // Increased window size
-            this.setLocationRelativeTo(null); // Center the window
+            //this.setLocationRelativeTo(null); // Center the window
             this.setLayout(null);
             this.setVisible(true);
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -517,7 +517,8 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.scoreCount = this.scoreCount + 10;
         this.client.setScore(this.scoreCount);
         JLabel correctLabel = new JLabel(message);
-        correctLabel.setBounds(500, 50, 1000, 100);
+        correctLabel.setFont(new Font("Times New Roman", Font.BOLD, 32));
+        correctLabel.setBounds(400, 200, 1000, 100);
         this.add(correctLabel);
         this.repaint();
         this.revalidate();
@@ -543,6 +544,8 @@ public class AppWindow extends JFrame implements ClientStateObserver
 		noPoll.setForeground(Color.BLUE); 
 
         this.add(noPoll);
+        this.repaint();
+        this.revalidate();
         
     }
 
@@ -555,7 +558,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.getContentPane().setBackground(null);
 
         this.setSize(1200, 800); // Increased window size
-        this.setLocationRelativeTo(null); // Center the window
+        //this.setLocationRelativeTo(null); // Center the window
         this.setLayout(null);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -564,7 +567,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         
         this.scoreCount = this.scoreCount - 20;
         this.client.setScore(this.scoreCount);
-        JLabel noAnswer = new JLabel("No answer was submitted!");
+        JLabel noAnswer = new JLabel("No answer was submitted! -20 points.");
         noAnswer.setFont(new Font("Times New Roman", Font.BOLD, 32));
         noAnswer.setBounds(400, 200, 1000, 100);
         this.add(noAnswer);
@@ -581,7 +584,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.repaint();
 
         this.setSize(1200, 800); // Increased window size
-        this.setLocationRelativeTo(null); // Center the window
+        //this.setLocationRelativeTo(null); // Center the window
         this.setLayout(null);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -603,7 +606,7 @@ public class AppWindow extends JFrame implements ClientStateObserver
         this.repaint();
 
         this.setSize(1200, 800); // Increased window size
-        this.setLocationRelativeTo(null); // Center the window
+        //this.setLocationRelativeTo(null); // Center the window
         this.setLayout(null);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

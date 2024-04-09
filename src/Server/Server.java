@@ -265,6 +265,8 @@ public class Server
                             }
                         }
 
+                        //calculate scores now and send their ranking back to the user
+
                         TreeMap<Integer, List<ClientHandler>> scoreMap = new TreeMap<>(Collections.reverseOrder());
 
                         for(ClientHandler client : clientHandlers)
